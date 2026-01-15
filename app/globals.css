@@ -1,26 +1,265 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* --- Fonts --- */
+@font-face {
+  font-family: 'timeFont';
+  src: url('/fonts/timeFont.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* --- Tailwind Configuration --- */
+@custom-variant dark (&:where(.dark, .dark *));
+@custom-variant tiny (@media (height <= 450px));
+@custom-variant short (@media (450px < height <= 650px));
+@custom-variant medium (@media (650px < height <= 900px));
+@custom-variant tall (@media (900px < height <= 1200px));
+@custom-variant grand (@media (height > 1200px));
+
+@theme {
+  --background: var(--color-white);
+  --foreground: var(--color-black);
+  
+  --color-charcoal: #1B1B1E;
+  --color-darGray: #69696D;
+  --color-lightGray: #E0E0E4;
+  --color-theBlue: #3179FF;
+  --color-theGreen: #41D959;
+  --color-theOrange: #F65900;
+  --color-black: #000000;
+  --color-white: #FFFFFF;
+  --color-purpleAccent: #8A5CFF;
+  --color-deepPurple: #453177;
+  --color-vibrantYellow: #FFD931;
+  --color-mutedYellow: #E4E4A2;
+
+  --font-satoshi: 'satoshi', sans-serif;
+  --font-arb: 'Cairo', sans-serif;
+  --font-fifa: 'Fifa26', sans-serif;
+  --font-clashDisplay: 'Clash Display', sans-serif;
+  --font-arb1: "Aref Ruqaa", serif;
+  --font-arb2: "Alkalami", serif;
+  --font-time: "timeFont", sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer theme {
+  .dark {
+    --background: var(--color-black);
+    --foreground: var(--color-white);
   }
+}
+
+/* --- Base Styles --- */
+:root { 
+  --name-line-height: 1; 
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'satoshi', sans-serif;
+}
+
+/* Global Cursor Reset */
+body, a, button, input, div, span {
+  cursor: none !important;
+}
+
+/* --- Keyframes --- */
+@keyframes bounce {
+  0%, 100% { transform: scaleY(0.5); }
+  50% { transform: scaleY(5); }
+}
+
+@keyframes shs {
+  0% { filter: blur(0px); opacity: 1; }
+  50% { filter: blur(10px); opacity: 0.5; }
+  100% { filter: blur(0px); opacity: 1; }
+}
+
+/* --- Utilities --- */
+.safari-fix {
+  transform: translate3d(0, 0, 0);
+  -webkit-transform: translate3d(0, 0, 0);
+  will-change: transform, backdrop-filter;
+}
+
+.hjh {
+  transition: all cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+}
+
+.spdy {
+  transition: all cubic-bezier(0.175, 0.885, 0.32, 1.275) 0.31s !important;
+}
+
+.blured {
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+}
+
+.hi {
+  backdrop-filter: blur(3px);
+}
+
+.links:hover {
+  text-shadow: 0px 0px 8px rgba(0, 0, 0, 0.069);
+}
+
+.sk {
+  box-shadow: inset 6px 6px 12px #9b9b9b60, inset -6px -6px 12px #ffffff48;
+}
+
+.skdrk {
+  box-shadow: inset 6px 6px 12px #121212ef, inset -6px -6px 12px #ffffff18;
+}
+
+/* --- Component: Navigation --- */
+.navBar {
+  z-index: 50;
+  backdrop-filter: blur(50px);
+  -webkit-backdrop-filter: blur(50px);
+  mask-image: linear-gradient(to bottom, black 70%, transparent);
+  -webkit-mask-image: linear-gradient(to bottom, black, transparent);
+}
+
+/* --- Component: Gradient Blur --- */
+.gradient-blur {
+  position: fixed;
+  top: 0;
+  inset: 0 0 0 0;
+  height: 20%;
+  pointer-events: none;
+  z-index: 99999999 !important;
+  transition: background-color 1s ease-in-out !important;
+}
+
+/* Shared styles for gradient children */
+.gradient-blur > div,
+.gradient-blur::before,
+.gradient-blur::after {
+  position: absolute;
+  inset: 0;
+}
+
+.gradient-blur::before {
+  content: "";
+  z-index: 1;
+  backdrop-filter: blur(0.5px);
+  mask: linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 12.5%, rgba(0,0,0,1) 25%, rgba(0,0,0,0) 37.5%);
+}
+
+.gradient-blur > div:nth-of-type(1) {
+  z-index: 2;
+  backdrop-filter: blur(1px);
+  mask: linear-gradient(to bottom, rgba(0,0,0,0) 12.5%, rgba(0,0,0,1) 25%, rgba(0,0,0,1) 37.5%, rgba(0,0,0,0) 50%);
+}
+
+.gradient-blur > div:nth-of-type(2) {
+  z-index: 3;
+  backdrop-filter: blur(2px);
+  mask: linear-gradient(to bottom, rgba(0,0,0,0) 25%, rgba(0,0,0,1) 37.5%, rgba(0,0,0,1) 50%, rgba(0,0,0,0) 62.5%);
+}
+
+.gradient-blur > div:nth-of-type(3) {
+  z-index: 4;
+  backdrop-filter: blur(4px);
+  mask: linear-gradient(to bottom, rgba(0,0,0,0) 37.5%, rgba(0,0,0,1) 50%, rgba(0,0,0,1) 62.5%, rgba(0,0,0,0) 75%);
+}
+
+.gradient-blur > div:nth-of-type(4) {
+  z-index: 5;
+  backdrop-filter: blur(8px);
+  mask: linear-gradient(to bottom, rgba(0,0,0,0) 50%, rgba(0,0,0,1) 62.5%, rgba(0,0,0,1) 75%, rgba(0,0,0,0) 87.5%);
+}
+
+.gradient-blur > div:nth-of-type(5) {
+  z-index: 6;
+  backdrop-filter: blur(16px);
+  mask: linear-gradient(to bottom, rgba(0,0,0,0) 62.5%, rgba(0,0,0,1) 75%, rgba(0,0,0,1) 87.5%, rgba(0,0,0,0) 100%);
+}
+
+.gradient-blur > div:nth-of-type(6) {
+  z-index: 7;
+  backdrop-filter: blur(32px);
+  mask: linear-gradient(to bottom, rgba(0,0,0,0) 75%, rgba(0,0,0,1) 87.5%, rgba(0,0,0,1) 100%);
+}
+
+.gradient-blur::after {
+  content: "";
+  z-index: 8;
+  backdrop-filter: blur(64px);
+  mask: linear-gradient(to bottom, rgba(0,0,0,0) 87.5%, rgba(0,0,0,1) 100%);
+}
+
+/* --- Component: Typography & Background --- */
+.name {
+  display: inline-block;
+  line-height: var(--name-line-height);
+  will-change: transform, text-shadow;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  backface-visibility: hidden;
+  font-family: 'Inter var', var(--font-clashDisplay), system-ui, sans-serif;
+  font-variation-settings: 'wght' 700;
+}
+
+.folo, 
+.folo.trigger-animation {
+  animation: shs 0.6s cubic-bezier(0.455, 0.03, 0.515, 0.955) forwards;
+}
+
+.background {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  --step: 10px;
+  mix-blend-mode: color-dodge;
+  background: repeating-linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.1),
+    rgba(0, 0, 0, 0.38),
+    rgba(255, 255, 255, 0.27) var(--step)
+  );
+  backdrop-filter: blur(20px);
+  filter: blur(0.5px);
+  box-shadow: inset 0 0 10px #000;
+}
+
+/* --- Component: Custom Cursor --- */
+.ipad-cursor {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9999999999;
+  margin-left: -10px; 
+  margin-top: -10px;
+  transition: width 0.3s ease, height 0.3s ease, background-color 0.3s ease, border-radius 0.3s ease, transform 0.1s linear;
+  transition-property: width, height, background-color, border-radius, margin;
+}
+
+.ipad-cursor.snap {
+  width: 45px;
+  height: 45px;
+  background-color: rgba(200, 200, 200, 0.4);
+  margin-left: -25px;
+  margin-top: -25px;
+  filter: none;
+  backdrop-filter: none;
+}
+
+.snap2 {
+  width: 0px;
+  height: 0px;
+  background-color: rgba(200, 200, 200, 0.1);
+  filter: blur(20px) !important;
+  transition: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  backdrop-filter: none;
 }
