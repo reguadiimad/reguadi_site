@@ -45,7 +45,7 @@ const GlassLogo = ({
         */}
         <div 
           className={`
-            absolute z-0 overflow-hidden 
+            absolute z-0 overflow-hidden blured
             transition-all duration-700 ease-[cubic-bezier(0.25,0.1,0.25,1)]
             ${current.glassStyle} 
             ${isDark ? "bg-black/15" : ""}

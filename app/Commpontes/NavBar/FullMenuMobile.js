@@ -31,7 +31,7 @@ const FullMenuMobile = ({ onToggle,navTexts,languages }) => {
       className="w-screen h-screen bg-lightGray/70 dark:bg-darGray backdrop-blur-xl fixed top-0 left-0 z-[99999] lg:hidden"
     >
       <div className="w-full h-full items-center overflow-scroll pb-20 flex flex-col relative p-2">
-        <div dir={isArabic?"rtl":"ltr"} className={`w-[95%] md:w-[72%] mt-[35%] flex flex-col `}>
+        <div dir={isArabic?"rtl":"ltr"} className={`w-[95%]  md:w-[72%] tiny:mt-[80px] short:mt-[15%] medium:mt-[35%] mt-[35%]  flex flex-col `}>
           {texts.map((text, i) => (
             <motion.a
               key={text}
@@ -76,7 +76,7 @@ const FullMenuMobile = ({ onToggle,navTexts,languages }) => {
                           dispatch(setLanguage(lang));
                           setShowDropDownLang(false);
                         }}
-                        className={`py-1 hover:underline cursor-pointer ${lang.indice==="Ar"&&"font-arb"}`}
+                        className={`py-1 hover:underline clickable ${lang.indice==="Ar"&&"font-arb"}`}
                       >
                         {lang.value}
                       </p>

@@ -9,6 +9,17 @@
   font-display: swap;
 }
 
+/* 1. The Regular Style */
+@font-face {
+  font-family: 'tallFont'; /* Naming it tallFont */
+  src: url('/fonts/bolda.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* 2. The Outline Style */
+
 /* --- Tailwind Configuration --- */
 @custom-variant dark (&:where(.dark, .dark *));
 @custom-variant tiny (@media (height <= 450px));
@@ -41,6 +52,7 @@
   --font-arb1: "Aref Ruqaa", serif;
   --font-arb2: "Alkalami", serif;
   --font-time: "timeFont", sans-serif;
+  --font-tall: "tallFont", sans-serif;
 }
 
 @layer theme {
@@ -95,7 +107,6 @@ body, a, button, input, div, span {
 
 .blured {
   -webkit-backdrop-filter: blur(4px);
-  backdrop-filter: blur(4px);
 }
 
 .hi {
@@ -241,7 +252,7 @@ body, a, button, input, div, span {
   z-index: 9999999999;
   margin-left: -10px; 
   margin-top: -10px;
-  transition: width 0.3s ease, height 0.3s ease, background-color 0.3s ease, border-radius 0.3s ease, transform 0.1s linear;
+  transition: width 0.3s ease, height 0.3s ease, background-color 0.3s ease, border-radius 0.3s ease, transform 0.1s linear,scale 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   transition-property: width, height, background-color, border-radius, margin;
 }
 
@@ -262,4 +273,19 @@ body, a, button, input, div, span {
   filter: blur(20px) !important;
   transition: cubic-bezier(0.175, 0.885, 0.32, 1.275);
   backdrop-filter: none;
+}
+/* In your global CSS file */
+@media (pointer: fine) {
+  body {
+    cursor: none; /* Hide system cursor only if we have a fine pointer (and are replacing it) */
+  }
+}
+
+.hd{
+  -webkit-text-fill-color: transparent;
+  -webkit-text-stroke: 3px; 
+}
+
+.clicking{
+  background: red;
 }

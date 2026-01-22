@@ -6,20 +6,10 @@ import { Info } from 'lucide-react';
 import { useSelector } from 'react-redux';
 
 // --- Performance Heuristic ---
-// Returns 'low' or 'high' configuration based on CPU cores
 const getPerformanceTier = () => {
-  // 1. Safety check for SSR
   if (typeof window === 'undefined') return 'high';
-
-  // 2. Check Logical Cores
-  // Most modern phones/M1 Macs have 6+ cores. 
-  // Older Intel MacBooks (2017) often have 2 or 4 threads.
   const cores = navigator.hardwareConcurrency || 4;
-  
-  // If cores < 4, it's likely an older dual-core machine. 
-  // We treat 4 as the borderline.
   const isLowSpec = cores < 4; 
-
   return isLowSpec ? 'low' : 'high';
 };
 
@@ -31,54 +21,55 @@ export default function ParticleWaves() {
   useEffect(() => {
     if (!mountRef.current) return;
 
-    // --- 1. Determine Performance Settings ---
     const tier = getPerformanceTier();
     
+    // --- 1. Dynamic Grid Calculation ---
+    // We calculate how wide the screen is relative to a standard laptop (1440px)
+    // If screen is 2800px, we double the columns.
+    const widthFactor = Math.max(1, window.innerWidth / 1200);
+
     const config = {
         high: {
-            cols: 180,
+            // Scale columns based on screen width
+            cols: Math.floor(180 * widthFactor), 
             rows: 120,
-            pixelRatio: Math.min(window.devicePixelRatio, 2), // Cap at 2x
-            geoDetail: 16 // Smooth spheres
+            pixelRatio: Math.min(window.devicePixelRatio, 2),
+            geoDetail: 16,
+            spacing: 0.75 // Slightly increased spacing to cover more area efficiently
         },
         low: {
-            cols: 100, // Reduced density (approx 7k particles vs 21k)
+            cols: Math.floor(100 * widthFactor), 
             rows: 70, 
-            pixelRatio: 1, // ⚠️ CRITICAL: Force 1x resolution on old Macs
-            geoDetail: 8   // Low poly spheres (looks same at small scale)
+            pixelRatio: 1, 
+            geoDetail: 8,
+            spacing: 0.9 // Wider spacing for low spec to fill screen with fewer dots
         }
     }[tier];
 
     // --- Dynamic Color Definitions ---
-const isDark = theme === 'dark';
+    const isDark = theme === 'dark';
+    const bgColor = isDark ? 0x0a0a0a : 0xfbfcfc; 
+    const particleColor = isDark ? 0xdddddd : 0x7c7c80; 
+    const dirLightColor = isDark ? 0x6e788c : 0x4a90e2; 
 
-// Changed from 0xffffff to 0xf3f4f6 (Super Light Gray)
-const bgColor = isDark ? 0x0a0a0a : 0xfbfcfc; 
+    // --- Scene Setup ---
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(bgColor);
 
-// Slightly tweaked the particle color for better contrast against the gray
-const particleColor = isDark ? 0xdddddd : 0x7c7c80; 
-const dirLightColor = isDark ? 0x6e788c : 0x4a90e2; 
-
-// --- Scene Setup ---
-const scene = new THREE.Scene();
-scene.background = new THREE.Color(bgColor);
-
-// ⚠️ Important: Fog must match the new bgColor or the horizon will look "cut off"
-scene.fog = new THREE.FogExp2(bgColor, 0.035);
+    // Fog hides the distant edges
+    scene.fog = new THREE.FogExp2(bgColor, 0.035);
     
     const camera = new THREE.PerspectiveCamera(
       50,
       window.innerWidth / window.innerHeight,
       0.1,
-      100
+      200 // ⚠️ Increased from 100 to 200 so distinct edges don't get clipped on huge screens
     );
     camera.position.set(0, 18, 35);
     camera.lookAt(0, -2, 0);
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
     renderer.setSize(window.innerWidth, window.innerHeight);
-    
-    // ⚠️ Apply the Performance Config
     renderer.setPixelRatio(config.pixelRatio);
     
     mountRef.current.appendChild(renderer.domElement);
@@ -92,12 +83,10 @@ scene.fog = new THREE.FogExp2(bgColor, 0.035);
     scene.add(dirLight);
 
     // --- Particles (InstancedMesh) ---
-    // ⚠️ Use Config variables
     const cols = config.cols;
     const rows = config.rows;
     const count = cols * rows;
     
-    // ⚠️ Reduce geometry detail on low power
     const geometry = new THREE.SphereGeometry(0.1, config.geoDetail, config.geoDetail);
     
     const material = new THREE.MeshPhongMaterial({
@@ -112,10 +101,8 @@ scene.fog = new THREE.FogExp2(bgColor, 0.035);
 
     const dummy = new THREE.Object3D();
     
-    // Adjust spacing slightly if density is lower to cover same area?
-    // Actually keeping spacing same looks cleaner, just a smaller patch, 
-    // BUT let's increase spacing slightly for low-spec to cover more ground
-    const spacing = tier === 'low' ? 0.8 : 0.6; 
+    // Use the spacing from our config
+    const spacing = config.spacing; 
     
     const offsetX = (cols * spacing) / 2;
     const offsetZ = (rows * spacing) / 2;
@@ -156,6 +143,9 @@ scene.fog = new THREE.FogExp2(bgColor, 0.035);
           const posX = x * spacing - offsetX;
           const posZ = z * spacing - offsetZ;
 
+          // Simple optimization: If particle is too far from camera view, skip heavy math
+          // (Optional, kept simple for now)
+
           const distGlobal = Math.sqrt(posX * posX + posZ * posZ);
           let y = Math.sin(distGlobal * 0.15 - time * 0.8) * 1.0 +
                   Math.sin(posX * 0.3 + time * 0.5) * 0.5;
@@ -172,8 +162,6 @@ scene.fog = new THREE.FogExp2(bgColor, 0.035);
 
           dummy.position.set(posX, y, posZ);
           
-          // Optimization: Don't calculate scale if it's far away? 
-          // For now, keep visual polish as it's cheap on CPU
           const s = 0.5 + (Math.max(0, y + 3) / 6) * 0.8;
           dummy.scale.set(s, s, s);
 
@@ -190,6 +178,10 @@ scene.fog = new THREE.FogExp2(bgColor, 0.035);
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight);
+      
+      // Note: We don't re-calculate grid size on resize to avoid lagging
+      // It calculates once on mount based on initial screen size.
+      // If user drags window from small to huge, a refresh is needed for new particles.
     };
 
     const handleMouseMove = (event) => {

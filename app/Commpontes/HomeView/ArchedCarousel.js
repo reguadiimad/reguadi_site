@@ -131,6 +131,8 @@ const Card = ({ index, baseX, isUnsupportedBrowser, scrollY, config }) => {
 export default function ArchedCarousel() {
   const baseX = useMotionValue(0);
   const [isUnsupported, setIsUnsupported] = useState(false);
+  // NEW: Add a mounted state
+  const [isMounted, setIsMounted] = useState(false);
   const { scrollY } = useScroll();
 
   // State for responsive dimensions
@@ -143,6 +145,9 @@ export default function ArchedCarousel() {
   });
 
   useEffect(() => {
+    // 1. Mark component as mounted immediately
+    setIsMounted(true);
+
     // Browser check
     const ua = navigator.userAgent.toLowerCase();
     const isFirefox = ua.includes('firefox');
@@ -152,29 +157,27 @@ export default function ArchedCarousel() {
     // Responsive Logic
     const handleResize = () => {
         const screenW = window.innerWidth;
-        // If screen is smaller than base width + margin, we scale down
-        // We use 0.85 (85%) of screen width for mobile to leave room for the curve
         const targetWidth = Math.min(BASE_WIDTH, screenW * 0.85);
-        
-        // Calculate the scale ratio (e.g., 0.5 for mobile)
         const scale = targetWidth / BASE_WIDTH;
 
         setConfig({
             width: targetWidth,
-            height: BASE_HEIGHT * scale,     // Maintain aspect ratio
-            gapMin: BASE_GAP_MIN * scale,    // Scale overlap
-            gapMax: BASE_GAP_MAX * scale,    // Scale gap
-            radius: BASE_RADIUS * scale      // Scale curve radius (Crucial for same look)
+            height: BASE_HEIGHT * scale,
+            gapMin: BASE_GAP_MIN * scale,
+            gapMax: BASE_GAP_MAX * scale,
+            radius: BASE_RADIUS * scale
         });
     };
 
-    handleResize(); // Run immediately
+    handleResize(); 
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   useAnimationFrame((t, delta) => {
-    // Adjust speed based on card width so it feels consistent
+    // Only run animation frame logic if we are mounted to be safe
+    if (!isMounted) return; 
+
     const speedAdjustment = config.width / BASE_WIDTH; 
     let moveBy = (SPEED * speedAdjustment) * (delta / 16); 
     baseX.set(baseX.get() + moveBy);
@@ -183,9 +186,14 @@ export default function ArchedCarousel() {
   return (
     <div className="relative w-full min-h-[700px]"> 
       <div className="sticky top-0 w-full h-screen flex justify-center items-start overflow-hidden pt-20 ">
-        <div className="absolute inset-0  pointer-events-none" />
+        <div className="absolute inset-0 pointer-events-none" />
 
-        {items.map((item, index) => (
+        {/* CRITICAL FIX: 
+            Only render the Cards (which contain the heavy math and useTransform) 
+            after the client has mounted. This prevents the server HTML (which has 
+            different float precision) from conflicting with the client hydration.
+        */}
+        {isMounted && items.map((i, index) => (
           <Card 
               key={index} 
               index={index} 

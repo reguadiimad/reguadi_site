@@ -61,7 +61,7 @@ useEffect(() => {
  return ( 
     <>
      
-      <div  className={`${isArabic&&'font-arb'} w-screen flex flex-col items-center `}>
+      <div  className={`${isArabic&&'font-arb'} w-screen flex flex-col items-center selection:bg-theBlue selection:text-white  dark:selection:bg-theOrange  `}>
         <ParticleWaves/>
          <AnimatePresence>
            {
