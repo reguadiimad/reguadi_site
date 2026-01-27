@@ -24,25 +24,22 @@ export default function ParticleWaves() {
     const tier = getPerformanceTier();
     
     // --- 1. Dynamic Grid Calculation ---
-    // We calculate how wide the screen is relative to a standard laptop (1440px)
-    // If screen is 2800px, we double the columns.
     const widthFactor = Math.max(1, window.innerWidth / 1200);
 
     const config = {
         high: {
-            // Scale columns based on screen width
             cols: Math.floor(180 * widthFactor), 
             rows: 120,
             pixelRatio: Math.min(window.devicePixelRatio, 2),
             geoDetail: 16,
-            spacing: 0.75 // Slightly increased spacing to cover more area efficiently
+            spacing: 0.75 
         },
         low: {
             cols: Math.floor(100 * widthFactor), 
             rows: 70, 
             pixelRatio: 1, 
             geoDetail: 8,
-            spacing: 0.9 // Wider spacing for low spec to fill screen with fewer dots
+            spacing: 0.9 
         }
     }[tier];
 
@@ -52,18 +49,23 @@ export default function ParticleWaves() {
     const particleColor = isDark ? 0xdddddd : 0x7c7c80; 
     const dirLightColor = isDark ? 0x6e788c : 0x4a90e2; 
 
+    // --- UPDATED: LED Glow Colors ---
+    const baseColorThree = new THREE.Color(particleColor);
+    // Changed to pure white (0xffffff) for both themes
+    const ledColorThree = new THREE.Color(0xffffff); 
+    const tempColor = new THREE.Color(); 
+
     // --- Scene Setup ---
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(bgColor);
 
-    // Fog hides the distant edges
     scene.fog = new THREE.FogExp2(bgColor, 0.035);
     
     const camera = new THREE.PerspectiveCamera(
       50,
       window.innerWidth / window.innerHeight,
       0.1,
-      200 // ⚠️ Increased from 100 to 200 so distinct edges don't get clipped on huge screens
+      200 
     );
     camera.position.set(0, 18, 35);
     camera.lookAt(0, -2, 0);
@@ -90,7 +92,7 @@ export default function ParticleWaves() {
     const geometry = new THREE.SphereGeometry(0.1, config.geoDetail, config.geoDetail);
     
     const material = new THREE.MeshPhongMaterial({
-      color: particleColor,
+      color: 0xffffff, // Must stay white so instance colors show true-to-color
       shininess: 80,
       specular: particleColor,
     });
@@ -101,7 +103,6 @@ export default function ParticleWaves() {
 
     const dummy = new THREE.Object3D();
     
-    // Use the spacing from our config
     const spacing = config.spacing; 
     
     const offsetX = (cols * spacing) / 2;
@@ -143,9 +144,6 @@ export default function ParticleWaves() {
           const posX = x * spacing - offsetX;
           const posZ = z * spacing - offsetZ;
 
-          // Simple optimization: If particle is too far from camera view, skip heavy math
-          // (Optional, kept simple for now)
-
           const distGlobal = Math.sqrt(posX * posX + posZ * posZ);
           let y = Math.sin(distGlobal * 0.15 - time * 0.8) * 1.0 +
                   Math.sin(posX * 0.3 + time * 0.5) * 0.5;
@@ -154,11 +152,23 @@ export default function ParticleWaves() {
           const dz = posZ - smoothTarget.z;
           const distToMouse = Math.sqrt(dx*dx + dz*dz);
 
+          // --- LED Glow Logic ---
+          let glowFactor = 0;
           if (interactionStrength > 0.01) {
               const falloff = Math.exp(-distToMouse * 0.15);  
               const ripple = Math.sin(distToMouse * 0.8 - time * 3.0) * 1.5;
               y += ripple * falloff * interactionStrength;
+
+              // The maxGlowRadius determines how wide the white light spreads
+              const maxGlowRadius = 10; 
+              if (distToMouse < maxGlowRadius) {
+                glowFactor = Math.pow(1 - (distToMouse / maxGlowRadius), 2) * interactionStrength;
+              }
           }
+
+          tempColor.lerpColors(baseColorThree, ledColorThree, glowFactor);
+          mesh.setColorAt(i, tempColor);
+          // ---------------------------
 
           dummy.position.set(posX, y, posZ);
           
@@ -171,6 +181,7 @@ export default function ParticleWaves() {
       }
       
       mesh.instanceMatrix.needsUpdate = true;
+      mesh.instanceColor.needsUpdate = true; 
       renderer.render(scene, camera);
     };
 
@@ -178,10 +189,6 @@ export default function ParticleWaves() {
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight);
-      
-      // Note: We don't re-calculate grid size on resize to avoid lagging
-      // It calculates once on mount based on initial screen size.
-      // If user drags window from small to huge, a refresh is needed for new particles.
     };
 
     const handleMouseMove = (event) => {
