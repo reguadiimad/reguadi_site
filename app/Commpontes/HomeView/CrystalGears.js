@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useEffect, useState, useMemo } from "react";
+import React, { useRef, useEffect, useState, useMemo, Suspense } from "react";
 import { useSelector } from "react-redux";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import {
@@ -11,8 +11,6 @@ import {
   PerformanceMonitor,
 } from "@react-three/drei";
 import * as THREE from "three";
-// 1. Import physics hooks
-import { useSpring } from "framer-motion";
 
 // --- Configuration ---
 const BASE_RESOLUTION = 512;
@@ -29,9 +27,18 @@ const createGearShape = (radius, teeth, toothDepth) => {
   for (let i = 0; i < teeth; i++) {
     const angle = i * 2 * step;
     shape.lineTo(Math.cos(angle) * radius, Math.sin(angle) * radius);
-    shape.lineTo(Math.cos(angle + step) * (radius + toothDepth), Math.sin(angle + step) * (radius + toothDepth));
-    shape.lineTo(Math.cos(angle + step * 2) * (radius + toothDepth), Math.sin(angle + step * 2) * (radius + toothDepth));
-    shape.lineTo(Math.cos(angle + step * 3) * radius, Math.sin(angle + step * 3) * radius);
+    shape.lineTo(
+      Math.cos(angle + step) * (radius + toothDepth),
+      Math.sin(angle + step) * (radius + toothDepth)
+    );
+    shape.lineTo(
+      Math.cos(angle + step * 2) * (radius + toothDepth),
+      Math.sin(angle + step * 2) * (radius + toothDepth)
+    );
+    shape.lineTo(
+      Math.cos(angle + step * 3) * radius,
+      Math.sin(angle + step * 3) * radius
+    );
   }
 
   const holePath = new THREE.Path();
@@ -49,7 +56,7 @@ const GearObj = ({
   teeth = 12,
   speed = 1,
   invertRotation = false,
-  quality 
+  quality,
 }) => {
   const meshRef = useRef();
 
@@ -60,8 +67,8 @@ const GearObj = ({
       bevelEnabled: true,
       bevelThickness: 0.1,
       bevelSize: 0.08,
-      bevelSegments: 4, 
-      curveSegments: 6, 
+      bevelSegments: 4,
+      curveSegments: 6,
     };
     return new THREE.ExtrudeGeometry(shape, extrudeSettings);
   }, [radius, teeth]);
@@ -74,6 +81,7 @@ const GearObj = ({
 
   useFrame((state, delta) => {
     if (meshRef.current) {
+      // Continuous internal spinning of the gears
       if (invertRotation) {
         meshRef.current.rotation.z += delta * speed;
       } else {
@@ -84,26 +92,28 @@ const GearObj = ({
 
   const materialProps = isDarkMode
     ? {
-        color: "#f1f1f1",
-        transmission: 0.92,
+        color: "#ffffff",
+        transmission: 0.88,
         opacity: 1,
         roughness: 0.1,
-        thickness: 5.5,
-        ior: 2,
-        chromaticAberration: 0.25,
-        anisotropy: 1,
-        distortion: 0.5,
-        distortionScale: 0.3,
-        temporalDistortion: 0.5,
+        thickness: 3.5,
+        ior: 1,
+        chromaticAberration: 0.04,
+        anisotropy: 0.1,
+        distortion: 0.2,
+        distortionScale: 0.2,
+        temporalDistortion: 0.1,
+        attenuationDistance: 1,
+        attenuationColor: "#eef2ff",
       }
     : {
         color: "#eef2ff",
-        transmission: 0.8,
+        transmission: 0.9,
         opacity: 1,
         roughness: 0.1,
         thickness: 2.5,
         ior: 1.2,
-        chromaticAberration: 0.3,
+        chromaticAberration: 0.1,
         anisotropy: 1,
         distortion: 0.2,
         distortionScale: 0.2,
@@ -137,22 +147,6 @@ const BackendGears = ({ isDarkMode, quality }) => {
     viewport.height / 12
   );
 
-  // 2. Setup Physics Springs (Pop Engine)
-  const springConfig = { stiffness: 180, damping: 12, mass: 1 };
-  const scaleSpring = useSpring(0, springConfig);
-  const rotateZSpring = useSpring(Math.PI, springConfig); // Start upside down
-  const rotateYSpring = useSpring(Math.PI, springConfig); // Start flipped
-
-  // 3. Trigger Animation with 0.25s Delay
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      scaleSpring.set(1);
-      rotateZSpring.set(THREE.MathUtils.degToRad(-25)); // Target tilt
-      rotateYSpring.set(0);
-    }, 250); // <--- 0.25s Delay
-    return () => clearTimeout(timer);
-  }, []);
-
   useEffect(() => {
     const handleMouseMove = (event) => {
       const w = window.innerWidth;
@@ -166,32 +160,22 @@ const BackendGears = ({ isDarkMode, quality }) => {
 
   useFrame(() => {
     if (groupRef.current) {
-      // 4. THE BRIDGE: Read spring values
-      const currentScale = scaleSpring.get();
-      const currentRotZ = rotateZSpring.get();
-      const currentRotY = rotateYSpring.get();
+      // Apply Scale
+      groupRef.current.scale.setScalar(responsiveScale);
 
-      // Apply Scale (Responsive * Animation)
-      groupRef.current.scale.setScalar(responsiveScale * currentScale);
-
-      // Apply Mouse Parallax X (Standard)
+      // Apply Mouse Parallax X
       groupRef.current.rotation.x = THREE.MathUtils.lerp(
         groupRef.current.rotation.x,
         mouse.current.y * 0.4,
         0.1
       );
 
-      // Apply Y Rotation (Mouse Parallax + Entrance Flip)
-      // We add the spring value (currentRotY) to the mouse target
+      // Apply Mouse Parallax Y
       groupRef.current.rotation.y = THREE.MathUtils.lerp(
         groupRef.current.rotation.y,
-        currentRotY + (mouse.current.x * -0.6),
+        mouse.current.x * -0.6,
         0.1
       );
-
-      // Apply Z Rotation (Entrance Spin + Static Tilt)
-      // The spring handles the transition from Math.PI to -25deg
-      groupRef.current.rotation.z = currentRotZ;
     }
   });
 
@@ -202,15 +186,17 @@ const BackendGears = ({ isDarkMode, quality }) => {
   const R2 = 0.8;
   const TEETH2 = 8;
   const SPEED2 = SPEED1 * (TEETH1 / TEETH2);
-  
+
   const GAP_CORRECTION = 0.15;
   const DISTANCE = R1 + R2 + TOOTH_DEPTH + GAP_CORRECTION + 0.31;
   const X_OFFSET = DISTANCE / 2;
 
+  // Static tilt angle (previously the target of the spring)
+  const STATIC_TILT = THREE.MathUtils.degToRad(-25);
+
   return (
     <Float floatIntensity={1.5} speed={2} rotationIntensity={0.5}>
-      {/* Removed the wrapper group, Z-rotation is now handled by the spring */}
-      <group ref={groupRef}>
+      <group ref={groupRef} rotation={[0, 0, STATIC_TILT]}>
         <GearObj
           isDarkMode={isDarkMode}
           position={[-X_OFFSET, 0, 0]}
@@ -236,11 +222,12 @@ const BackendGears = ({ isDarkMode, quality }) => {
   );
 };
 
-export default function BackendGearDisplay() {
-  const currentTheme = useSelector((state) => state.theme.theme);
+export default function BackendGearDisplay({isArabic}) {
+  const currentTheme = useSelector((state) => state.theme?.theme) || "system";
   const [systemIsDark, setSystemIsDark] = useState(false);
   const [dpr, setDpr] = useState(1.5);
   const [quality, setQuality] = useState("high");
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -256,35 +243,55 @@ export default function BackendGearDisplay() {
     currentTheme === "dark" || (currentTheme === "system" && systemIsDark);
 
   return (
-    <div className="h-[320px] sm:h-[350px] md:h-[390px] lg:h-[440px] xl:h-[580px] w-full flex items-center justify-center z-0 translate-x-[29%] translate-y-[10%] lg:translate-y-[14%] ">
-      <Canvas
-        dpr={dpr}
-        camera={{ position: [0, 0, 10], fov: 45 }}
-        style={{ pointerEvents: "none", width: "100%", height: "100%" }}
-        frameloop="always" 
+    <div className={`h-[250px]  md:h-[300px] lg:h-[440px] xl:h-[580px] w-full flex items-center justify-center z-0 translate-x-[29%] translate-y-[10%] ${isArabic&&" translate-y-0"} lg:translate-y-[20%]`}>
+      
+      {/* Wrapper controls opacity visibility */}
+      <div 
+        className={`w-full h-full transition-opacity duration-1000 ease-out ${
+          ready ? "opacity-100" : "opacity-0"
+        }`}
       >
-        <PerformanceMonitor 
-          onDecline={() => { setDpr(1); setQuality("low"); }} 
-          onIncline={() => { setDpr(1.5); setQuality("high"); }} 
-        />
+        <Canvas
+          dpr={dpr}
+          camera={{ position: [0, 0, 10], fov: 45 }}
+          style={{ pointerEvents: "none", width: "100%", height: "100%" }}
+          frameloop="always"
+          onCreated={() => setReady(true)}
+        >
+          <PerformanceMonitor
+            onDecline={() => {
+              setDpr(1);
+              setQuality("low");
+            }}
+            onIncline={() => {
+              setDpr(1.5);
+              setQuality("high");
+            }}
+          />
 
-        <ambientLight intensity={isDarkMode ? 0.5 : 0.8} />
-        <spotLight
-          position={[10, 10, 10]}
-          angle={0.15}
-          penumbra={1}
-          intensity={isDarkMode ? 1 : 1.5}
-        />
-        <pointLight
-          position={[-10, -10, -10]}
-          intensity={isDarkMode ? 1 : 0.5}
-        />
-        <Environment preset={isDarkMode ? "city" : "studio"} />
+          <Suspense fallback={null}>
+            <ambientLight intensity={isDarkMode ? 0.5 : 0.8} />
+            <spotLight
+              position={[10, 10, 10]}
+              angle={0.15}
+              penumbra={1}
+              intensity={isDarkMode ? 1 : 1.5}
+            />
+            <pointLight
+              position={[-10, -10, -10]}
+              intensity={isDarkMode ? 1 : 0.5}
+            />
+            <Environment preset={"studio"} />
 
-        <Center>
-          <BackendGears isDarkMode={isDarkMode} quality={quality} />
-        </Center>
-      </Canvas>
+            <Center>
+              <BackendGears 
+                isDarkMode={isDarkMode} 
+                quality={quality} 
+              />
+            </Center>
+          </Suspense>
+        </Canvas>
+      </div>
     </div>
   );
 }

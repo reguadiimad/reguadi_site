@@ -106,7 +106,7 @@ body, a, button, input, div, span {
 }
 
 .blured {
-  -webkit-backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(2px);
 }
 
 .hi {
@@ -280,12 +280,34 @@ body, a, button, input, div, span {
     cursor: none; /* Hide system cursor only if we have a fine pointer (and are replacing it) */
   }
 }
-
 .hd{
-  -webkit-text-fill-color: transparent;
-  -webkit-text-stroke: 3px; 
+  animation: hjj  5s ease-in-out infinite;
+
 }
 
+.hdAr{
+  -webkit-text-fill-color: transparent;
+  -webkit-text-stroke: 1.7px; 
+}
+.hdMob{
+  -webkit-text-fill-color: transparent;
+  -webkit-text-stroke: 1.3px;
+}
+.hdMob1{
+  -webkit-text-fill-color: transparent;
+  -webkit-text-stroke: 0.7px;
+}
+@keyframes hjj {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
 .clicking{
    position: fixed;
   top: 0;
@@ -300,4 +322,47 @@ body, a, button, input, div, span {
   transition: width 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275)  , height 0.1 cubic-bezier(0.175, 0.885, 0.32, 1.275) , background-color 0.3s ease, border-radius 0.3s ease, transform 0.1s linear,scale 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   transition-property: width, height, background-color, border-radius, margin;
   
+}
+
+
+@keyframes fadeInBlur {
+    0% { opacity: 0; filter: blur(4px); }
+    100% { opacity: 1; filter: blur(0); }
+}
+.animate-fade-in-blur {
+    animation: fadeInBlur 0.3s ease-out forwards;
+}
+
+.card {
+  position: relative;
+  /* Example size and glass effect for context */
+  
+}
+
+.cards {
+  content: "";
+  position: absolute;
+  inset: 0;
+
+  padding: 1px; /* This defines the Border Width specified (3px) */
+  
+  /* The Gradient Logic based on your image specs */
+  background: linear-gradient(
+    135deg, 
+    rgba(255, 255, 255, 0.2) 0%,   /* Point 1: White 50% */
+    rgba(255, 255, 255, 0) 35%,    /* Point 2: White 0% (Fade out) */
+    rgba(255, 72, 219, 0) 65%,     /* Point 3: Pink 0% (Fade in start) */
+    rgba(186, 186, 186, 0.2) 100%   /* Point 4: Pink 50% */
+  );
+  
+  /* The Mask Trick: excludes the center so only the border shows */
+  -webkit-mask: 
+     linear-gradient(#fff 0 0) content-box, 
+     linear-gradient(#fff 0 0);
+     
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  
+  /* Ensures clicks pass through the border to the card content */
+  pointer-events: none; 
 }

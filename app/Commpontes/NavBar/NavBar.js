@@ -45,7 +45,6 @@ export default function NavBar({ mode1, toggleMode }) {
   const isArabic = language.indice === "Ar";
   const texts = navTexts[language.indice] || navTexts.Eng;
 
-  const xDirection = isArabic ? 1 : -1;
   const morphStyle = {
     [isArabic ? "marginRight" : "marginLeft"]: `${hoveredMorph * 25}%`,
   };
@@ -92,7 +91,6 @@ export default function NavBar({ mode1, toggleMode }) {
       </div>
 
       {/* --- CENTER NAV (LINKS) --- */}
-      {/* Added layout prop here so the container size animates smoothly */}
       <motion.div
         layout
         onMouseEnter={() => setShowMorph(true)}
@@ -124,9 +122,10 @@ export default function NavBar({ mode1, toggleMode }) {
                 <motion.p
                   onMouseEnter={() => setHoveredMorph(i)}
                   key={text}
-                  initial={{ opacity: 0, y: -10 }} 
+                  initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
+                  // Delays for links: 0.05, 0.10, 0.15, 0.20
                   transition={{ delay: i * 0.05, duration: 0.2 }}
                   className={`hidden hover:text-shadow-xl links text-center lg:w-[80px] transform hover:font-bold transition-all py-3 z-10 xl:w-[100px] 2xl:w-[120px] clickableMenu border border-transparent rounded-4xl lg:flex items-center justify-center ease-in-out duration-200 ${
                     isArabic ? "text-right" : "text-left"
@@ -144,16 +143,26 @@ export default function NavBar({ mode1, toggleMode }) {
 
       {/* --- RIGHT ACTIONS SECTION --- */}
       <LayoutGroup>
-        <motion.div layout className={`flex gap-2 items-stretch ${isArabic && "flex-row-reverse"}`}>
-          
+        <motion.div
+          layout
+          // FIX: Added initial/animate states here to match the delay of the links
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          // FIX: Added delay so it waits for links to finish (approx 0.4s)
+          transition={{ 
+            opacity: { delay: 0.4, duration: 0.4 }, 
+            layout: { duration: 0.3 } 
+          }}
+          className={`flex gap-2 items-stretch ${isArabic && "flex-row-reverse"}`}
+        >
           <AnimatePresence mode="popLayout" initial={false}>
             {!mode1 && (
               <motion.div
-                key="settings-container" // Unique Key
-                // REMOVED layoutId="spacerBox" -> causing the glitch
-                layout // keep layout so it slides smoothly
-                className="px-1 lg:px-2 gap-2 lg:gap-1 xl:gap-2 hover:scale-105 transition-transform rounded-4xl transition-colors ease-in-out duration-200 border dark:border-[2.5px] border-black/20 shadow-2xs dark:border-white/20 hover:bg-black/5 dark:hover:bg-white/10 lg:flex items-center justify-center hidden"
+                key="settings-container"
+                layout
+                className="px-1 lg:px-2 gap-2 lg:gap-1 xl:gap-2 hover:scale-105 transition-transform rounded-4xl transition-colors ease-in-out duration-200 border dark:border-[2.5px] border-black/20 shadow-2xs dark:border-white/30 hover:bg-black/5 dark:hover:bg-white/10 lg:flex items-center justify-center hidden"
                 transition={{ type: "spring", bounce: 0, duration: 0.4 }}
+                // Keeping these implies they run when Mode1 toggles, but the parent motion.div handles first load
                 initial={{ opacity: 0, scale: 0.8, filter: "blur(10px)" }}
                 animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
                 exit={{ opacity: 0, scale: 0.8, filter: "blur(10px)" }}
@@ -169,7 +178,9 @@ export default function NavBar({ mode1, toggleMode }) {
                   >
                     <div>{language.indice}</div>
                     <FontAwesomeIcon
-                      className={`ml-2 ease-in-out duration-200 ${showDropDownLang && "rotate-180 -mb-0.5"}`}
+                      className={`ml-2 ease-in-out duration-200 ${
+                        showDropDownLang && "rotate-180 -mb-0.5"
+                      }`}
                       icon={faCaretDown}
                     />
                   </motion.div>
@@ -225,12 +236,12 @@ export default function NavBar({ mode1, toggleMode }) {
             )}
           </AnimatePresence>
 
-          {/* Contact Button - kept layoutId so it "knows" where it is relative to siblings */}
+          {/* Contact Button */}
           <motion.button
             layout
             layoutId="contactBtn"
             onClick={toggleMode}
-            className="bg-black clickableMenu hover:scale-105 hover:shadow-xl ease-in-out duration-100 border-2 z-[100000] border-black dark:bg-white hover:opacity-80 font-bold shadow-sm text-center px-4 py-2 sm:px-6 sm:py-3 lg:px-5 lg:py-2.5 xl:px-6 xl:py-3 rounded-4xl text-white dark:text-black"
+            className="bg-black clickableMenu hover:scale-105 hover:shadow-xl ease-in-out duration-100 border-2 z-[100000] border-black dark:bg-white hover:opacity-80 font-bold shadow-sm text-center px-4 py-2 sm:px-6 sm:py-3 lg:px-5 lg:py-2.5 xl:px-6 xl:py-3 rounded-4xl text-white dark:text-black transition-colors"
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
@@ -241,11 +252,10 @@ export default function NavBar({ mode1, toggleMode }) {
           <AnimatePresence mode="popLayout">
             {mode1 && (
               <motion.div
-                key="ellipsis-btn" // Unique Key
-                // REMOVED layoutId="spacerBox"
+                key="ellipsis-btn"
                 layout
                 onClick={toggleMode}
-                className="px-4 hover:mr-1 hover:shadow-xl ease-in-out duration-100 clickableMenu hover:scale-105 rounded-4xl border-2 border-black bg-black dark:hover:bg-white/10 dark:hover:text-lightGray text-white lg:flex items-center justify-center text-2xl hidden"
+                className="px-4 hover:mr-1 hover:shadow-xl ease-in-out duration-100 clickableMenu hover:scale-105 rounded-4xl border-2 border-black bg-black dark:hover:bg-white/10 dark:hover:text-lightGray text-white lg:flex items-center justify-center text-2xl hidden transition-colors"
                 transition={{ type: "spring", stiffness: 300, damping: 30 }}
                 initial={{ opacity: 0, scale: 0.2 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -261,7 +271,7 @@ export default function NavBar({ mode1, toggleMode }) {
               key="mobile-toggle"
               onClick={() => setMenuMobile((v) => !v)}
               aria-label="Toggle menu"
-              className="relative flex items-center gap-2 justify-center w-14 cursor-pointer rounded-4xl bg-lightGray dark:bg-darGray text-gray-900 dark:text-gray-100 z-[100000] lg:hidden"
+              className="relative flex items-center gap-2 justify-center w-14 cursor-pointer rounded-4xl bg-lightGray dark:bg-darGray text-gray-900 dark:text-gray-100 z-[100000] lg:hidden transition-colors"
             >
               <span
                 className={`${burgerBarClasses} ${
@@ -278,11 +288,16 @@ export default function NavBar({ mode1, toggleMode }) {
 
           <AnimatePresence>
             {menuMobile && (
-              <FullMenuMobile languages={languages} navTexts={navTexts} onToggle={() => setMenuMobile(false)} />
+              <FullMenuMobile
+                languages={languages}
+                navTexts={navTexts}
+                onToggle={() => setMenuMobile(false)}
+              />
             )}
           </AnimatePresence>
         </motion.div>
       </LayoutGroup>
+
       <IPadCursor />
     </div>
   );

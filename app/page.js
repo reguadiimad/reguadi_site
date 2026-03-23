@@ -65,7 +65,7 @@ useEffect(() => {
         <ParticleWaves/>
          <AnimatePresence>
            {
-            !mode1 &&  <motion.div  initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}  className=" gradient-blur z-[9999999998] rotate-180 bg-gradient-to-b from-transparent  to-white   dark:to-black/60">
+           !mode1 && <motion.div  initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}  className=" gradient-blur z-[9999999998] rotate-180 bg-gradient-to-b from-transparent  to-white   dark:to-black/60">
             {
               Array.from({ length: 20 }).map((_, index) => (<motion.div key={"blr"+index} initial={{opacity:0,y:40}} animate={{opacity:1,y:0}} exit={{opacity:0,y:60}} transition={{type:"spring",ease:"circInOut",delay:0.02*index}}></motion.div>))
             }
