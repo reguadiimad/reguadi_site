@@ -1,11 +1,18 @@
 import { useState, useCallback } from 'react';
-import { LayoutGroup, motion, useDragControls } from 'framer-motion';
+import { LayoutGroup, motion, useScroll, useTransform } from 'framer-motion';
 import AnimatedWelcome from './AnimatedWelcome';
 import TypingAnimation from './IntroductionView';
 import ArchedCarousel from './ArchedCarousel'; // Import the new component
-import { LiquidGlass } from '@liquidglass/react';
 import { useSelector } from 'react-redux';
 import CardsContent from '../../Data/CradsContent';
+import { Squircle } from "@squircle-js/react";
+import Monoco from '@monokai/monoco-react';
+
+import SquircleStage from './Beta';
+import GooeyMorphPage from './Beta';
+import Blobs from './Beta';
+
+
 
 
 export default function HomeView() {
@@ -31,40 +38,68 @@ export default function HomeView() {
 
 
       <div className='w-full ease-in-out duration-200  tiny:h-[70px] short:h-[120px] medium:h-[200px] tall:h-[310px] grand:h-[370px]  '></div>
-          
 
-      <LayoutGroup>
-        <motion.div className='w-full relative flex items-center justify-center mb-10  ' layout={true} transition={{type:"spring"}}>
-          <AnimatedWelcome onAnimationComplete={handleAnimationComplete} />
-        </motion.div>
-
-        {
-          showTyping && <motion.div layout={true} transition={{type:"spring"}} className="w-full  ">
-            <TypingAnimation onComplete={a=>setTypingComplete(a)}/>
-          </motion.div>
-        }
-     
-      </LayoutGroup>
-
-  
-      <div className='w-full relative z-0 '>
-        <ArchedCarousel/>
-      </div>
-
-
-
-
-
+      <Blobs/>
 
 
 
       
 
     </div>
+
+
      
    </>
   );
 }
+{/**<div className=' h-full absolute w-[2px] bg-gradient-to-b from-transparent via-lightGray/70 to-transparent  '/>
+    <h1 className='text-center w-[60%] text-6xl text-lightGray'>Osmo is an ever-growing platform with Webflow & HTML resources. Get exclusive access to the elements, techniques and code behind award-winning work.</h1>
+    <div className='w-full flex justify-center items-center relative h-[400px]'>
+    </div> */}
+
+
+    
+const ScrollingCircle = () => {
+  const totalSpans = 110;
+  const radius = 450;
+
+  // 1. Hook into the page scroll
+  const { scrollYProgress } = useScroll();
+
+  // 2. Map scroll (0 to 1) to rotation (0 to 360 degrees)
+  const rotate = useTransform(scrollYProgress, [0, 1], [0, 360]);
+
+  return (
+    <div className="relative w-[400px]  h-[400px] flex items-center justify-center">
+      <motion.div 
+        style={{ rotate,transition:"cubic-bezier(0.175, 0.885, 0.32, 1.275)" }} transition={{ type: "spring"}} // 3. Apply the scroll-driven rotation here
+        className="relative w-full h-full flex items-center justify-center"
+      >
+        {Array.from({ length: totalSpans }).map((_, i) => {
+          const angle = (i / totalSpans) * 2 * Math.PI;
+          
+          // Use .toFixed(3) to prevent the Hydration Error you had earlier
+          const x = (Math.cos(angle) * radius).toFixed(3);
+          const y = (Math.sin(angle) * radius).toFixed(3);
+          const spanRotation = (angle + Math.PI / 2).toFixed(3);
+
+          return (
+            <span
+              key={i}
+              className="absolute w-[2px] h-[10px] bg-darGray rounded-full"
+              style={{
+                transform: `translate(${x}px, ${y}px) rotate(${spanRotation}rad)`,
+              }}
+            />
+          );
+        })}
+      </motion.div>
+    </div>
+  );
+};
+
+
+
 
 
 {
@@ -180,3 +215,74 @@ style5/
   
 }
 
+{/*
+      
+
+      <LayoutGroup>
+        <motion.div className='w-full relative flex items-center justify-center mb-10  ' layout={true} transition={{type:"spring"}}>
+          <AnimatedWelcome onAnimationComplete={handleAnimationComplete} />
+        </motion.div>
+
+        {
+          showTyping && <motion.div layout={true} transition={{type:"spring"}} className="w-full  ">
+            <TypingAnimation onComplete={a=>setTypingComplete(a)}/>
+          </motion.div>
+        }
+     
+      </LayoutGroup>
+
+  
+     {
+      typingComplete &&  (<div className='w-full relative z-0 '>
+       <ArchedCarousel/>
+      </div>)
+     }
+     {
+      typingComplete &&  (
+        <div className='w-full items-center justify-center flex flex-col relative h-[150vh] -mt-96 '>
+    <div className=' h-full absolute w-0.5 bg-linear-to-b from-transparent via-lightGray/70 to-transparent  '/>
+    <div className='w-full h-[40%] flex items-center justify-center'>
+      <h1 className='text-center w-[60%] text-6xl text-darGray dark:text-lightGray'>Osmo is an ever-growing platform with Webflow & HTML resources. Get exclusive access to the elements, techniques and code behind award-winning work.</h1>
+    </div>
+    <div className='w-full relative h-[40%] items-center justify-center flex flex-col'>
+
+      <ScrollingCircle/>
+      <div className='w-full absolute flex items-center justify-center'>
+        <div className='h-0.5 w-full bg-linear-to-r from-transparent via-lightGray/70 to-transparent absolute z-0'/>
+        
+
+        <h1 className='text-9xl font-extrabold mx-4 z-10 overflow-visible  text-transparent bg-darGray/20 dark:bg-lightGray/20 backdrop-blur-[3px] pt-4 pb-8' style={{WebkitMaskImage: 'linear-gradient(black, black)',WebkitMaskClip: 'text'}}>
+          Play
+        </h1>
+       <Monoco borderRadius={50}
+        smoothing={1}
+        background='#f00'
+        border={[1, '#000']}
+        clip={true} className='spdy2 mx-10 hover:mx-20'>
+       <video className='w-125' autoPlay  muted playsInline>
+                  <source src='Videos/ReelIntro.mp4' type='video/mp4' />
+
+                </video>
+       </Monoco>
+
+          
+
+
+         <h1 className='text-9xl font-extrabold mx-4 z-10 overflow-visible  text-transparent bg-darGray/20 dark:bg-lightGray/20 backdrop-blur-xs pt-4 pb-8' style={{WebkitMaskImage: 'linear-gradient(black, black)',WebkitMaskClip: 'text'}}>
+          Reel
+        </h1>
+      </div>
+       <div className=' flex items-end justify-end  absolute bottom-[6%] right-[18%]'>
+        <img className='w-32 dark:hidden' src={'/images/see.png'}/>
+        <img className='w-32  hidden dark:block scale-x-110' src={'/images/seeDrk.png'}/>
+        <p className='text-theBlue dark:text-theOrange font-caveat text-4xl ml-2'>See whaht i can do :D</p>
+       </div>
+
+    </div>
+    <div className='w-full h-[20%] items-center justify-center flex flex-col'></div>
+  </div>
+      )
+     }
+  
+  
+  */}

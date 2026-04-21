@@ -6,6 +6,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCaretDown, faEllipsis } from "@fortawesome/free-solid-svg-icons";
 
+
 import FullMenuMobile from "./FullMenuMobile";
 import { setLanguage } from "../../redux/languageSlice";
 import { setPlayingSound, triggerSoundModeChange } from "../../redux/soundSlice";
@@ -13,6 +14,7 @@ import { setThemeIsChanged, setTheTheme } from "../../redux/themeSlice";
 import SoundWaveIcon from "./SoundWave";
 import GlassLogo from "./GalssLogo";
 import IPadCursor from "../GlobalComponotes/IPadCursor";
+import Monoco from "@monokai/monoco-react";
 
 const languages = [
   { indice: "Eng", value: "English " },
@@ -143,6 +145,7 @@ export default function NavBar({ mode1, toggleMode }) {
 
       {/* --- RIGHT ACTIONS SECTION --- */}
       <LayoutGroup>
+
         <motion.div
           layout
           // FIX: Added initial/animate states here to match the delay of the links
@@ -160,7 +163,7 @@ export default function NavBar({ mode1, toggleMode }) {
               <motion.div
                 key="settings-container"
                 layout
-                className="px-1 lg:px-2 gap-2 lg:gap-1 xl:gap-2 hover:scale-105 transition-transform rounded-4xl transition-colors ease-in-out duration-200 border dark:border-[2.5px] border-black/20 shadow-2xs dark:border-white/30 hover:bg-black/5 dark:hover:bg-white/10 lg:flex items-center justify-center hidden"
+                className="px-1.5 py-0 lg:px-1 lg:pl-[5.5px] gap-2 lg:gap-1 xl:gap-2 hover:scale-105 rounded-4xl  ease-in-out duration-200 border dark:border-[2.5px] border-black/20 shadow-2xs dark:border-white/30 hover:bg-black/5 dark:hover:bg-white/10 lg:flex items-center justify-center hidden"
                 transition={{ type: "spring", bounce: 0, duration: 0.4 }}
                 // Keeping these implies they run when Mode1 toggles, but the parent motion.div handles first load
                 initial={{ opacity: 0, scale: 0.8, filter: "blur(10px)" }}
@@ -168,9 +171,9 @@ export default function NavBar({ mode1, toggleMode }) {
                 exit={{ opacity: 0, scale: 0.8, filter: "blur(10px)" }}
               >
                 {/* Language Dropdown */}
-                <div className="relative z-50" onClick={() => setShowDropDownLang(!showDropDownLang)}>
+                <div className="relative z-50 ease-in-out transition-all" onClick={() => setShowDropDownLang(!showDropDownLang)}>
                   <motion.div
-                    className={`font-bold clickableMenu hover:shadow-xl hover:scale-[1.08] text-center px-3 py-1 rounded-4xl ease-in-out duration-100 flex items-center justify-center cursor-pointer ${
+                    className={`font-bold clickableMenu hover:shadow-xl hover:scale-[1.08] hover:ml-[1.5px]  text-center px-3 py-1 rounded-4xl ease-in-out duration-100 flex items-center justify-center cursor-pointer ${
                       mode1
                         ? ""
                         : "bg-lightGray hover:bg-darGray/30 dark:bg-darGray dark:hover:bg-lightGray/50 dark:text-lightGray text-darGray"
@@ -186,12 +189,13 @@ export default function NavBar({ mode1, toggleMode }) {
                   </motion.div>
                   <AnimatePresence>
                     {showDropDownLang && (
-                      <motion.div
+                     <Monoco borderRadius={24} smoothing={1} clip={true} className=" absolute shadow-xl clickbaleMenu top-[140%] p-[18px]  bg-lightGray dark:bg-darGray dark:text-lightGray text-darGray/80  text-left flex flex-col left-0 min-w-[120px]">
+                       <motion.div
                         initial={{ y: -10, opacity: 0, scale: 0.9 }}
                         animate={{ y: 0, opacity: 1, scale: 1 }}
                         exit={{ y: -10, opacity: 0, scale: 0.9 }}
                         transition={{ type: "spring", duration: 0.2 }}
-                        className="absolute shadow-xl clickbaleMenu top-[140%] gap-4 p-[10px] rounded-[20px] bg-lightGray dark:bg-darGray dark:text-lightGray text-darGray/80 backdrop-blur-2xl text-left flex flex-col left-0 min-w-[120px]"
+                        className=" clickbaleMenu gap-4    text-left flex flex-col left-0 w-full"
                         onClick={(e) => e.stopPropagation()}
                       >
                         {languages
@@ -212,6 +216,7 @@ export default function NavBar({ mode1, toggleMode }) {
                             </p>
                           ))}
                       </motion.div>
+                     </Monoco>
                     )}
                   </AnimatePresence>
                 </div>
@@ -237,17 +242,24 @@ export default function NavBar({ mode1, toggleMode }) {
           </AnimatePresence>
 
           {/* Contact Button */}
-          <motion.button
+        <Monoco borderRadius={22}
+        smoothing={1}
+       
+
+        clip={true}  className="bg-black clickableMenu flex items-center justify-center  hover:scale-105 hover:shadow-xl ease-in-out duration-100   z-[100000]  hover:opacity-80 font-bold shadow-sm dark:bg-white text-center px-4 py-2 sm:px-6 sm:py-3 lg:px-5 lg:py-2.5 xl:px-6 xl:py-3  text-white dark:text-black transition-colors">
+            <motion.button
             layout
             layoutId="contactBtn"
             onClick={toggleMode}
-            className="bg-black clickableMenu hover:scale-105 hover:shadow-xl ease-in-out duration-100 border-2 z-[100000] border-black dark:bg-white hover:opacity-80 font-bold shadow-sm text-center px-4 py-2 sm:px-6 sm:py-3 lg:px-5 lg:py-2.5 xl:px-6 xl:py-3 rounded-4xl text-white dark:text-black transition-colors"
+            className="  text-white dark:text-black transition-colors"
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
-            {isArabic ? "اتصل بي" : "Contact"}
+       
+          {isArabic ? "اتصل بي" : "Contact"}
           </motion.button>
+        </Monoco>
 
           <AnimatePresence mode="popLayout">
             {mode1 && (
@@ -296,6 +308,7 @@ export default function NavBar({ mode1, toggleMode }) {
             )}
           </AnimatePresence>
         </motion.div>
+
       </LayoutGroup>
 
       <IPadCursor />

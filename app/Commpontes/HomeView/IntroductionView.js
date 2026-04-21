@@ -4,6 +4,7 @@ import { TypeAnimation } from 'react-type-animation';
 import { motion, AnimatePresence } from 'framer-motion';
 import CrystalToggle from './CrystalTogle';
 import BackendGearsDisplay from './CrystalGears';
+import Monoco from '@monokai/monoco-react';
 
 const TypingAnimation = ({ onComplete }) => {
   const defaultLanguage = useSelector((state) => state.language.indice);
@@ -59,7 +60,11 @@ const content = {
         </h1>
 
         <AnimatePresence mode="popLayout">
-          {phase >= 1 && (<motion.span className="font-bold rounded-md shadow-lg text-white bg-blue-600 dark:bg-orange-500 px-1 py-0.5 text-[10px] md:text-sm lg:text-lg xl:text-xl font-satoshi -translate-y-1" layout dir="ltr" initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}>{phase === 1 ? (<TypeAnimation sequence={['<br/>', 500, () => setPhase(2)]} wrapper="span" speed={75} cursor={false} repeat={0} />) : (<span>&lt;br/&gt;</span>)}</motion.span>)}
+          {phase >= 1 && (
+            <Monoco borderRadius={13} smoothing={1} clip={true} className="relative z-10 shadow-lg text-white bg-blue-600 dark:bg-orange-500 px-2 py-1 text-[10px] md:text-sm lg:text-lg xl:text-xl font-satoshi -translate-y-1">
+              <motion.span className="font-bold w-full h-full  " layout dir="ltr" initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}>{phase === 1 ? (<TypeAnimation sequence={['<br/>', 500, () => setPhase(2)]} wrapper="span" speed={75} cursor={false} repeat={0} />) : (<span>&lt;br/&gt;</span>)}</motion.span>
+            </Monoco>
+            )}
         </AnimatePresence>
 
       </motion.div>

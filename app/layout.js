@@ -20,11 +20,39 @@ export default function RootLayout({ children }) {
         <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"rel="stylesheet"/>
         <link href="https://api.fontshare.com/v2/css?f[]=clash-display@200,300,400,500,600,700,1&f[]=satoshi@300,301,400,401,500,501,700,701,900,901,1,2&display=swap" rel="stylesheet"></link>
         <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@200..1000&family=El+Messiri:wght@400..700&display=swap" rel="stylesheet"></link>
-        <link href="https://fonts.googleapis.com/css2?family=Alkalami&family=Aref+Ruqaa:wght@400;700&display=swap" rel="stylesheet">
-    </link>
+        <link href="https://fonts.googleapis.com/css2?family=Alkalami&family=Aref+Ruqaa:wght@400;700&display=swap" rel="stylesheet"></link>
+        <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400..700&display=swap" rel="stylesheet"></link>
+        <script dangerouslySetInnerHTML={{
+            __html: `
+              (function () {
+                function clean() {
+                  document.querySelectorAll('[bis_skin_checked]').forEach(function (el) {
+                    el.removeAttribute('bis_skin_checked');
+                  });
+                  document.querySelectorAll('[bis_register]').forEach(function (el) {
+                    el.removeAttribute('bis_register');
+                  });
+                  if (document.body) {
+                    Array.from(document.body.attributes).forEach(function (attr) {
+                      if (attr.name.startsWith('__processed_') || attr.name === 'bis_register') {
+                        document.body.removeAttribute(attr.name);
+                      }
+                    });
+                  }
+                }
+                clean();
+                // Some extensions re-inject, so clean a few more times before hydration
+                new MutationObserver(clean).observe(document.documentElement, {
+                  attributes: true,
+                  subtree: true,
+                  attributeFilter: ['bis_skin_checked', 'bis_register']
+                });
+              })();
+            `,
+        }}/>
       </head>
 
-      <body className="bg-white   dark:bg-black text-black dark:text-white ">
+      <body suppressHydrationWarning  className="bg-white   dark:bg-black text-black dark:text-white ">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <Providers>
             <main>{children}</main>

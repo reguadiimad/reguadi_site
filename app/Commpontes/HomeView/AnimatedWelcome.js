@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSelector } from "react-redux";
 import { motion } from 'framer-motion';
 import { text } from '@fortawesome/fontawesome-svg-core';
+import Monoco from '@monokai/monoco-react';
 
 export default function AnimatedWelcome({ onAnimationComplete}) {
     const [animationStep, setAnimationStep] = useState(0);
@@ -29,7 +30,7 @@ export default function AnimatedWelcome({ onAnimationComplete}) {
     };
 
    
-    const containerClasses = animationStep < 2 ? 'w-10 h-10 sm:w-12 sm:h-12 rounded-full p-0' : 'px-3 py-2 md:px-5 md:py-2.5 rounded-full  ';
+    const containerClasses = animationStep < 2 ? 'w-10 h-10 sm:w-12 sm:h-12  p-0' : 'px-3 py-2 md:px-5 md:py-3  ';
     const textDirection = isArabic ? 'rtl' : 'ltr';
     const fontClass = isArabic ? 'font-arb' : '';
 
@@ -37,11 +38,15 @@ export default function AnimatedWelcome({ onAnimationComplete}) {
         <>
 
 
-            <motion.div className={` blured backdrop-blur-[2px] font-satoshi  flex items-center justify-center overflow-hidden whitespace-nowrap bg-lightGray/50 dark:bg-gray-500/40 text-darGray dark:text-lightGray font-semibold ${containerClasses}`}layout transition={{ type: "spring", damping: 25, stiffness: 300 }} variants={containerVariants} initial="hidden" animate={animationStep >= 1 ? "visible" : "hidden"} dir={textDirection}>
+          <Monoco borderRadius={19}
+            smoothing={1}
+            clip={true} >
+              <motion.div className={` blured backdrop-blur-[2px] font-satoshi  flex items-center justify-center overflow-hidden whitespace-nowrap bg-lightGray/50 dark:bg-gray-500/40 text-darGray dark:text-lightGray font-semibold ${containerClasses}`}layout transition={{ type: "spring", damping: 25, stiffness: 300 }} variants={containerVariants} initial="hidden" animate={animationStep >= 1 ? "visible" : "hidden"} dir={textDirection}>
                 <motion.div className={` text-xs md:text-base ${fontClass} ${isArabic ? 'text-right' : 'text-left'}`} variants={textVariants} initial="hidden" animate={animationStep === 2 ? "visible" : "hidden"}>
                     {fullText}
                 </motion.div>
             </motion.div>
+          </Monoco>
 
         </>
     );

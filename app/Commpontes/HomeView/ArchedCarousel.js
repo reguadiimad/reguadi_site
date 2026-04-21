@@ -9,6 +9,7 @@ import {
 import { useSelector } from 'react-redux'; 
 import i18nData from '../../translations/homeCardsData';
 import { LiquidGlass } from '@liquidglass/react';
+import Monoco from '@monokai/monoco-react';
 
 // Import your 8 custom cards here. 
 // (Adjust the path if your cards are saved in a different folder)
@@ -27,6 +28,37 @@ const BREAKPOINTS = {
   'sm':  { width: 340, height: 278, minGap: -100, maxGap: 25, speed: 0.8 },
   'base':{ width: 290, height: 237, minGap: -80, maxGap: 20, speed: 0.6 },
 };
+function useResponsiveRadius() {
+  // Default to 30 for mobile-first, or 60 if you prefer desktop-first SSR
+  const [radius, setRadius] = useState(30); 
+
+  useEffect(() => {
+    const handleResize = () => {
+      const width = window.innerWidth;
+
+      if (width < 640) {
+        setRadius(30); // Phones (Portrait)
+      } else if (width < 768) {
+        setRadius(40); // Phones (Landscape)
+      } else if (width < 1024) {
+        setRadius(45); // Mini iPads / Tablets
+      } else if (width < 1536) {
+        setRadius(50); // Laptops / Desktops
+      } else {
+        setRadius(60); // 2xl Screens and larger
+      }
+    };
+
+    // Run once on mount to get initial size
+    handleResize();
+
+    // Listen for window resize
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  return radius;
+}
 
 const BASE_RADIUS = 900; 
 const FLATTEN_THRESHOLD = 600;
@@ -74,6 +106,8 @@ const Card = React.memo(({
     return (currentX > -visibleRange && currentX < visibleRange) ? 'block' : 'none';
   });
 
+  const dynamicRadius = useResponsiveRadius();
+
   // Select the appropriate card component based on the index
   const ActiveCard = cardComponents[index % cardComponents.length];
 
@@ -91,9 +125,11 @@ const Card = React.memo(({
         height: `${height}px`,
         willChange: 'transform' 
       }}
-      className={`rounded-[20px] scale-90 sm:rounded-[25px] md:rounded-[30px] lg:rounded-[35px] 2xl:rounded-[40px] border-[1.5px] dark:border-white/30 p-[5px] overflow-visible`}
+      className={`rounded-[20px] relative scale-90 sm:rounded-[25px] md:rounded-[30px] lg:rounded-[35px] 2xl:rounded-[40px] p-[5px] lg:p-[20px] overflow-visible`}
     >
-      <div className='w-full h-full rounded-[15px] sm:rounded-[15px] md:rounded-[20px] lg:rounded-[25px] 2xl:rounded-[30px] blured bg-lightGray/10 shadow-2xl shadow-white/10 relative overflow-hidden'>
+      <Monoco borderRadius={dynamicRadius}  border={[2, '#84848472']} smoothing={1} clip={true} className=' p-[10px] w-full h-full absolute top-0 left-0  '></Monoco>
+
+      <div className='w-full h-full rounded-[25px] shadow-xl  lg:rounded-[40px]  blured bg-lightGray/5 relative overflow-hidden'>
         <LiquidGlass 
           borderRadius={0} 
           blur={0} 

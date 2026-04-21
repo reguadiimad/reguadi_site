@@ -76,16 +76,13 @@ useEffect(() => {
      
         {/* Your NavBar is fixed, so it stays on top */}
         <NavBar mode1={mode1} toggleMode={()=>setMode1(!mode1)}/> 
-        
-        {/* MODIFICATION: 
-          HomeView is no longer inside a w-[70%] div. 
-          It's now the main content block that will handle its own scrolling.
-        */}
-        <HomeView />
+     
+ 
+     <HomeView /> 
 
         {/* Your BtmScreen is fixed, so it stays on the bottom */}
         <BtmScreen currentCapsule={currentCapsule} mode1={mode1}/>
-        
+
       </div>
    
 

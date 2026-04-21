@@ -59,7 +59,9 @@ const IPadCursor = () => {
         cursor.classList.add('snap2');
       } else {
         cursor.classList.remove('snap2');
-      }
+      } 
+
+
 
       
     };

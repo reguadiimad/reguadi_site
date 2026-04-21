@@ -15,7 +15,17 @@
   src: url('/fonts/bolda.ttf') format('truetype');
   font-weight: normal;
   font-style: normal;
+
   font-display: swap;
+}
+:root {
+  --brm: 1;
+}
+
+@supports (corner-shape: squircle) {
+  :root {
+    --brm: 2;
+  }
 }
 
 /* 2. The Outline Style */
@@ -53,12 +63,14 @@
   --font-arb2: "Alkalami", serif;
   --font-time: "timeFont", sans-serif;
   --font-tall: "tallFont", sans-serif;
+  --font-caveat: "Caveat", cursive;
 }
 
 @layer theme {
   .dark {
     --background: var(--color-black);
     --foreground: var(--color-white);
+ 
   }
 }
 
@@ -103,6 +115,12 @@ body, a, button, input, div, span {
 
 .spdy {
   transition: all cubic-bezier(0.175, 0.885, 0.32, 1.275) 0.31s !important;
+}
+.spdy2 {
+  transition: all cubic-bezier(0.175, 0.885, 0.32, 1.275) 1s !important;
+}
+.suu {
+  transition: color 0.3s ease-in-out, transform 0.3s ease-in-out !important;
 }
 
 .blured {
@@ -365,4 +383,5 @@ body, a, button, input, div, span {
   
   /* Ensures clicks pass through the border to the card content */
   pointer-events: none; 
+
 }

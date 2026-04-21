@@ -6,6 +6,7 @@ import React, { useRef,useEffect } from 'react';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faLanguage,faRightLong } from "@fortawesome/free-solid-svg-icons";
 import { capsuleTranslations } from "../../translations/capsuleTranslations";
+import Monoco from "@monokai/monoco-react";
 
 
 
@@ -29,13 +30,11 @@ export default function ActivityCapsule({currentCapsule}) {
 
 }
 
-const LanguageCapsule = ({prevLanguage}) => {
+const LanguageCapsule = ({ prevLanguage }) => {
     const language = useSelector((state) => state.language);
 
-
-
     const containerVariants = {
-        hidden: { y: "120%", opacity: 0, scale: 0.9, transition: { type: "spring"},blur },
+        hidden: { y: "120%", opacity: 0, scale: 0.9, transition: { type: "spring" } },
         visible: { y: 0, opacity: 1, scale: 1, transition: { type: "spring" } },
         exit: {
             y: "120%",
@@ -43,7 +42,6 @@ const LanguageCapsule = ({prevLanguage}) => {
             scale: 0.9,
             transition: {
                 type: "spring",
-              
                 delay: 0.3
             }
         }
@@ -60,7 +58,7 @@ const LanguageCapsule = ({prevLanguage}) => {
         visible: {
             width: "auto",
             marginRight: "2.5rem",
-            marginLeft:"2.5rem",
+            marginLeft: "2.5rem",
             opacity: 1,
             transition: {
                 width: { delay: 0.25, duration: 0.3 },
@@ -69,25 +67,21 @@ const LanguageCapsule = ({prevLanguage}) => {
                 staggerChildren: 0.08
             }
         },
-        // This new exit variant ensures the text animates out first.
         exit: {
             width: 0,
             marginRight: 0,
             marginLeft: 0,
             opacity: 0,
             transition: {
-                // 'when: "afterChildren"' makes the parent (the width/opacity) animate after the text lines disappear.
                 when: "afterChildren",
                 staggerChildren: 0.05,
                 staggerDirection: -1,
-                // Give the width a specific duration for a smooth shrink.
                 width: { duration: 0.3 },
                 opacity: { duration: 0.1 }
             }
         }
     };
-    
-    // Variant for each individual line of text. No changes needed here.
+
     const textLineVariants = {
         hidden: { y: -20, opacity: 0, transition: { type: "spring", stiffness: 500, damping: 20 } },
         visible: { y: 0, opacity: 1, transition: { type: "spring", stiffness: 500, damping: 20 } }
@@ -98,52 +92,68 @@ const LanguageCapsule = ({prevLanguage}) => {
             variants={containerVariants}
             initial="hidden"
             animate="visible"
-            // Using the new 'exit' variant to apply the delay
             exit="exit"
             className={`absolute ${language.indice === "Ar" ? "font-arb" : ""}`}
         >
-            <motion.div
-                layout
-                transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                className="p-2 bg-lightGray/70 backdrop-blur-xs dark:bg-darGray/80 rounded-full flex items-stretch justify-center shadow-2xl shadow-black/5"
-            >
-                <motion.div layout="position" className="px-6 py-2 flex items-center justify-center bg-darGray/20 dark:bg-lightGray/40 rounded-full">
-                    <FontAwesomeIcon className="text-2xl text-theBlue dark:text-theOrange" icon={faLanguage}/>
-                </motion.div>
-
-                {/* Text content wrapped for animation */}
+            <Monoco borderRadius={33} smoothing={1} clip={true} className="p-[10px] bg-lightGray/70 backdrop-blur-xs dark:bg-darGray/80 shadow-2xl shadow-black/5">
                 <motion.div
-                    className="flex flex-col justify-center items-center text-gray-800 dark:text-gray-200 overflow-hidden"
-                    variants={textContainerVariants}
-                    initial="hidden"
-                    animate="visible"
-                    // Using the new 'exit' variant for the text container
-                    exit="exit"
+                    layout
+                    transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                    className="w-full h-full flex items-stretch justify-center"
                 >
-                    <motion.h1
-                        variants={textLineVariants}
-                        className="text-xl font-bold whitespace-nowrap"
-                    >
-                        {capsuleTranslations[language.indice].languageSwitched}
-                    </motion.h1>
-                    <motion.div key={language.indice}  exit={{x: -20,opacity: 0,filter: "blur(20px)"}}initial={{ opacity: 0, x: -15 }} animate={{opacity: 1,x: 0,filter: "blur(0px)"}} transition={{type:"spring",delay:0.3}} className="flex items-center justify-center mt-1 gap-2">
-                        {
-                            prevLanguage.indice !== language.indice ? (
-                        <>
-                        <span className="rounded-2xl  px-2 bg-darGray/20 dark:bg-lightGray/20  text-black/50 dark:text-white/50  text-sm">{prevLanguage.indice.toLowerCase()}</span> <FontAwesomeIcon className="text-base text-theBlue dark:text-theOrange" icon={faRightLong}/> <span className="rounded-2xl  px-2 bg-darGray/20 dark:bg-lightGray/20 dark:text-white/50 text-black/50 text-sm">{language.indice.toLowerCase()}</span></>
+                    {/* Icon Wrapper */}
+                    <Monoco borderRadius={23} smoothing={1} clip={true} className="px-6 py-2 bg-darGray/20 dark:bg-lightGray/40  ">
+                        <motion.div layout="position" className="flex items-center justify-center w-full h-full">
+                            <FontAwesomeIcon className="text-2xl text-theBlue dark:text-theOrange" icon={faLanguage} />
+                        </motion.div>
+                    </Monoco>
 
-                            ):(
-                                 <span className="rounded-2xl  px-2 bg-darGray/20 dark:bg-lightGray/20 text-black/50 dark:text-white/50 text-sm">{language.indice.toLowerCase()}</span>
-                            )
-                        }
+                    {/* Text content */}
+                    <motion.div
+                        className="flex flex-col justify-center items-center text-gray-800 dark:text-gray-200 overflow-hidden"
+                        variants={textContainerVariants}
+                        initial="hidden"
+                        animate="visible"
+                        exit="exit"
+                    >
+                        <motion.h1
+                            variants={textLineVariants}
+                            className="text-xl font-bold whitespace-nowrap"
+                        >
+                            {capsuleTranslations[language.indice].languageSwitched}
+                        </motion.h1>
+
+                        <motion.div 
+                            key={language.indice}
+                            variants={textLineVariants} // Use existing variants for consistency or keep your custom animation
+                            initial={{ opacity: 0, x: -15 }} 
+                            animate={{ opacity: 1, x: 0, filter: "blur(0px)" }} 
+                            exit={{ x: -20, opacity: 0, filter: "blur(20px)" }}
+                            transition={{ type: "spring", delay: 0.3 }} 
+                            className="flex items-center justify-center mt-1 gap-2"
+                        >
+                            {prevLanguage.indice !== language.indice ? (
+                                <>
+                                    <span className="rounded-xl px-2 bg-darGray/20 dark:bg-lightGray/20 text-black/50 dark:text-white/50 text-sm">
+                                        {prevLanguage.indice.toLowerCase()}
+                                    </span> 
+                                    <FontAwesomeIcon className="text-xs text-theBlue dark:text-theOrange" icon={faRightLong} /> 
+                                    <span className="rounded-xl px-2 bg-darGray/20 dark:bg-lightGray/20 dark:text-white/50 text-black/50 text-sm">
+                                        {language.indice.toLowerCase()}
+                                    </span>
+                                </>
+                            ) : (
+                                <span className="rounded-xl px-2 bg-darGray/20 dark:bg-lightGray/20 text-black/50 dark:text-white/50 text-sm">
+                                    {language.indice.toLowerCase()}
+                                </span>
+                            )}
+                        </motion.div>
                     </motion.div>
                 </motion.div>
-            </motion.div>
+            </Monoco>
         </motion.div>
     );
-}
-
-
+};
 
 const ThemeCapsule = () => {
     const language = useSelector((state) => state.language);
@@ -230,15 +240,18 @@ const ThemeCapsule = () => {
             exit="exit"
             className={`absolute ${language.indice === "Ar" ? "font-arb" : ""}`}
         >
+            <Monoco borderRadius={36} smoothing={1} clip={true} className="p-[10px] bg-lightGray/70  backdrop-blur-xs dark:bg-darGray/80 flex items-stretch justify-center shadow-2xl shadow-black/10">
+
             <motion.div
                 layout
                 transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                className="p-2 bg-lightGray/70  backdrop-blur-xs dark:bg-darGray/80 rounded-full flex items-stretch justify-center shadow-2xl shadow-black/10"
+                className="flex items-stretch justify-center "
             >
-                <motion.div layout="position" className={`p-2 w-24 flex spdy sk shadow-inherit bg-darGray/20 dark:bg-lightGray/40 rounded-full `}>
-                   <img className={`h-10 spdy opacity-80 ${!isLight&&"rotate-[360deg] invert-100 translate-x-[100%]"}`} src="Icons/darkModeSwitchIcon.PNG"/>
-                </motion.div>
-
+                <Monoco borderRadius={26} smoothing={1} clip={true} className="   flex spdy sk shadow-inherit sk   bg-darGray/20 dark:bg-lightGray/40">
+                    <motion.div layout="position" className={` flex spdy w-24 p-2  `}>
+                    <img className={`h-10 spdy opacity-80 ${!isLight&&"rotate-[360deg] invert-100 translate-x-[100%]"}`} src="Icons/darkModeSwitchIcon.PNG"/>
+                    </motion.div>
+                </Monoco>
                 {/* Text content wrapped for animation */}
                 <motion.div
                     className="flex flex-col justify-center items-center text-gray-800 dark:text-gray-200 overflow-hidden"
@@ -261,6 +274,9 @@ const ThemeCapsule = () => {
                     </motion.p>
                 </motion.div>
             </motion.div>
+
+            </Monoco>
+
         </motion.div>
     );
 }
@@ -343,14 +359,18 @@ const SoundCapsule = () => {
             exit="exit"
             className="absolute"
         >
-            <motion.div
+            <Monoco borderRadius={33} smoothing={1} clip={true} className="p-[10px] bg-lightGray/70 backdrop-blur-xs dark:bg-darGray/80  shadow-2xl shadow-black/5" >
+                <motion.div
                 layout
                 transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                className="p-2 bg-lightGray/70 backdrop-blur-xs dark:bg-darGray/80 rounded-full flex items-stretch justify-center shadow-2xl shadow-black/5"
+                className="w-full h-full  flex items-stretch justify-center"
+               
             >
-                <motion.div layout="position" className="px-6 py-2 flex items-center justify-center bg-darGray/10 dark:bg-lightGray/40 rounded-full">
+                   <Monoco borderRadius={23} smoothing={1} clip={true} className="px-6 py-2  bg-darGray/10 dark:bg-lightGray/40">
+                <motion.div layout="position" className=" flex items-center justify-center">
                     <SoundWaveIcon isPlaying={playingSound} hoverAllow={false} />
                 </motion.div>
+                </Monoco>
 
                 {/* Text content wrapped for animation */}
                 <motion.div
@@ -375,6 +395,8 @@ const SoundCapsule = () => {
                     </motion.p>
                 </motion.div>
             </motion.div>
+            </Monoco>
+            
         </motion.div>
     );
 }

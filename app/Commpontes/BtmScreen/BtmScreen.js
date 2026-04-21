@@ -4,7 +4,7 @@ import { useSelector } from "react-redux";
 import ActivityCapsule from "./ActiviteyCapsule";
 
 
-export default function BtmScreen({ currentCapsule }) {
+export default function BtmScreen({ currentCapsule  }) {
   const { language } = useSelector((state) => state);
   const isArabic = language.indice === "Ar";
   
@@ -18,6 +18,7 @@ export default function BtmScreen({ currentCapsule }) {
 
           <div className="flex-1 flex  items-center justify-center">
             <ActivityCapsule currentCapsule={currentCapsule}/>
+            
           </div>
 
           <div className="flex-1"></div>
