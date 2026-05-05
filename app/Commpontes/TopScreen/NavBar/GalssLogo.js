@@ -46,14 +46,14 @@ const GlassLogo = ({
         <div 
           className={`
             absolute z-0 overflow-hidden blured
-            transition-all duration-700 ease-[cubic-bezier(0.25,0.1,0.25,1)]
+            transition-all duration-100 ease-in-out
             ${current.glassStyle} 
             ${isDark ? "bg-black/15" : ""}
           `}
         >
           <LiquidGlass 
-              blur={isDark ? 1.1 : 1} 
-              contrast={isDark ? 0.7 : 1.9} 
+              blur={isDark ? 1 : 1} 
+              contrast={isDark ? 0.85 : 1.9} 
               brightness={isDark ? 1.2 : 1} 
               displacementScale={1.5} 
               elasticity={0.9} 
@@ -75,17 +75,17 @@ const GlassLogo = ({
             className="w-full z-10 h-full absolute object-contain pointer-events-none"
             
             // Initial state (entering)
-            initial={{ opacity: 0, filter: "blur(10px)", scale: 0.95 }}
+            initial={{ opacity: 0, filter: "blur(1px)", scale: 0.8 }}
             
             // Active state (visible)
             animate={{ opacity: 1, filter: "blur(0px)", scale: 1 }}
             
             // Exit state (leaving)
-            exit={{ opacity: 0, filter: "blur(10px)", scale: 1.05 }}
+            exit={{ opacity: 0, filter: "blur(1px)", scale: 0.8 }}
             
             // Smooth spring transition
             transition={{ 
-              duration: 0.6, 
+              duration: 0.1, 
               ease: [0.32, 0.72, 0, 1] // Apple-style easing
             }}
           />

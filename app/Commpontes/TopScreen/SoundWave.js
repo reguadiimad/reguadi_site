@@ -59,7 +59,8 @@ const SoundWaveIcon = ({ isPlaying, onToggle,language,hoverAllow=true,isMobile=f
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onClick={onToggle}
-      className={`relative flex items-center clickable  spdy  hover:px-2 justify-center p-1 gap-0.5 h-10 `}
+      key={"gu"}
+      className={`relative flex items-center clickable  spdy   hover:px-[10px] duration-75 justify-center p-1 gap-0.5 h-10 `}
     >
       <AnimatePresence>
         {(isHovered && hoverAllow) && (

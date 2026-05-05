@@ -1,7 +1,7 @@
 "use client";
 import { AnimatePresence, motion } from "framer-motion";
 import { useSelector } from "react-redux";
-import SoundWaveIcon from "../NavBar/SoundWave";
+import SoundWaveIcon from "../TopScreen/SoundWave";
 import React, { useRef,useEffect } from 'react';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faLanguage,faRightLong } from "@fortawesome/free-solid-svg-icons";

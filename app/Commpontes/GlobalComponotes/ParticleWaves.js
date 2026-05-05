@@ -5,14 +5,119 @@ import * as THREE from 'three';
 import { Info } from 'lucide-react';
 import { useSelector } from 'react-redux';
 
-// --- Performance Heuristic ---
+// ─── Performance Heuristic ────────────────────────────────────────────────────
 const getPerformanceTier = () => {
   if (typeof window === 'undefined') return 'high';
-  const cores = navigator.hardwareConcurrency || 4;
-  const isLowSpec = cores < 4; 
-  return isLowSpec ? 'low' : 'high';
+  return (navigator.hardwareConcurrency || 4) < 4 ? 'low' : 'high';
 };
 
+// ─── Shaders ──────────────────────────────────────────────────────────────────
+// ALL wave + color + scale math lives here — zero CPU per frame
+const vertexShader = /* glsl */`
+  uniform float uTime;
+  uniform vec2  uMouse;       // x, z on the wave plane
+  uniform float uInteraction;
+  uniform float uCols;
+  uniform float uRows;
+  uniform float uSpacing;
+  uniform vec3  uBaseColor;
+  uniform vec3  uLedColor;
+
+  varying vec3  vColor;
+  varying vec3  vNormal;
+  varying vec3  vViewPos;
+  varying float vFogDepth;
+
+  void main() {
+    // Reconstruct grid position from gl_InstanceID (no instanceMatrix needed)
+    float fid  = float(gl_InstanceID);
+    float rows = uRows;
+    float xi   = floor(fid / rows);
+    float zi   = mod(fid, rows);
+
+    float offsetX = uCols * uSpacing * 0.5;
+    float offsetZ  = rows * uSpacing * 0.5;
+
+    float px = xi * uSpacing - offsetX;
+    float pz = zi * uSpacing - offsetZ;
+
+    // Base wave (identical to original CPU math)
+    float d = length(vec2(px, pz));
+    float y = sin(d * 0.15 - uTime * 0.8) * 1.0
+            + sin(px * 0.3  + uTime * 0.5) * 0.5;
+
+    // Mouse ripple + glow
+    float dist     = length(vec2(px - uMouse.x, pz - uMouse.y));
+    float glowFactor = 0.0;
+
+    if (uInteraction > 0.01) {
+      float falloff = exp(-dist * 0.15);
+      float ripple  = sin(dist * 0.8 - uTime * 3.0) * 1.5;
+      y += ripple * falloff * uInteraction;
+
+      float maxR = 10.0;
+      if (dist < maxR) {
+        glowFactor = pow(1.0 - dist / maxR, 2.0) * uInteraction;
+      }
+    }
+
+    vColor = mix(uBaseColor, uLedColor, glowFactor);
+
+    // Per-particle scale (same formula as original)
+    float s = 0.5 + (max(0.0, y + 3.0) / 6.0) * 0.8;
+
+    // Final world position: scale sphere verts, then translate to grid slot
+    vec3 worldPos = position * s + vec3(px, y, pz);
+
+    vec4 mvPos  = modelViewMatrix * vec4(worldPos, 1.0);
+    vViewPos    = -mvPos.xyz;
+    vNormal     = normalMatrix * normal;
+    vFogDepth   = -mvPos.z;
+
+    gl_Position = projectionMatrix * mvPos;
+  }
+`;
+
+const fragmentShader = /* glsl */`
+  uniform vec3  uDirLightDir;
+  uniform vec3  uDirLightColor;
+  uniform float uDirLightIntensity;
+  uniform float uAmbientIntensity;
+  uniform vec3  uSpecularColor;
+  uniform vec3  uFogColor;
+  uniform float uFogDensity;
+
+  varying vec3  vColor;
+  varying vec3  vNormal;
+  varying vec3  vViewPos;
+  varying float vFogDepth;
+
+  void main() {
+    vec3 N = normalize(vNormal);
+    vec3 L = normalize(uDirLightDir);
+    vec3 V = normalize(vViewPos);
+
+    // Ambient
+    vec3 color = vColor * uAmbientIntensity;
+
+    // Diffuse
+    float diff = max(dot(N, L), 0.0);
+    color += vColor * uDirLightColor * diff * uDirLightIntensity;
+
+    // Specular (Phong)
+    vec3  R    = reflect(-L, N);
+    float spec = pow(max(dot(V, R), 0.0), 80.0);
+    color += uSpecularColor * uDirLightColor * spec * uDirLightIntensity * 0.5;
+
+    // Exponential² fog — matches THREE.FogExp2 formula exactly
+    float fog   = exp(-uFogDensity * uFogDensity * vFogDepth * vFogDepth);
+    color = mix(uFogColor, color, clamp(fog, 0.0, 1.0));
+
+    gl_FragColor = vec4(color, 1.0);
+  }
+`;
+
+// ─── Component ────────────────────────────────────────────────────────────────
 export default function ParticleWaves() {
   const mountRef = useRef(null);
   const [showUI, setShowUI] = useState(true);
@@ -22,166 +127,112 @@ export default function ParticleWaves() {
     if (!mountRef.current) return;
 
     const tier = getPerformanceTier();
-    
-    // --- 1. Dynamic Grid Calculation ---
     const widthFactor = Math.max(1, window.innerWidth / 1200);
 
     const config = {
-        high: {
-            cols: Math.floor(180 * widthFactor), 
-            rows: 120,
-            pixelRatio: Math.min(window.devicePixelRatio, 2),
-            geoDetail: 16,
-            spacing: 0.75 
-        },
-        low: {
-            cols: Math.floor(100 * widthFactor), 
-            rows: 70, 
-            pixelRatio: 1, 
-            geoDetail: 8,
-            spacing: 0.9 
-        }
+      high: { cols: Math.floor(180 * widthFactor), rows: 120, pixelRatio: Math.min(window.devicePixelRatio, 2), geoDetail: 16, spacing: 0.75 },
+      low:  { cols: Math.floor(100 * widthFactor), rows: 70,  pixelRatio: 1,                                   geoDetail: 8,  spacing: 0.9  },
     }[tier];
 
-    // --- Dynamic Color Definitions ---
     const isDark = theme === 'dark';
-    const bgColor = isDark ? 0x0a0a0a : 0xfbfcfc; 
-    const particleColor = isDark ? 0xdddddd : 0x7c7c80; 
-    const dirLightColor = isDark ? 0x6e788c : 0x4a90e2; 
+    const bgColor         = isDark ? 0x0a0a0a : 0xfbfcfc;
+    const particleColor   = isDark ? 0xdddddd : 0x7c7c80;
+    const dirLightHex     = isDark ? 0x6e788c : 0x4a90e2;
+    const ambientIntens   = isDark ? 0.6 : 0.7;
+    const dirLightIntens  = isDark ? 0.5 : 0.8;
 
-    // --- UPDATED: LED Glow Colors ---
-    const baseColorThree = new THREE.Color(particleColor);
-    // Changed to pure white (0xffffff) for both themes
-    const ledColorThree = new THREE.Color(0xffffff); 
-    const tempColor = new THREE.Color(); 
-
-    // --- Scene Setup ---
-    const scene = new THREE.Scene();
+    // ── Scene ──
+    const scene    = new THREE.Scene();
     scene.background = new THREE.Color(bgColor);
+    // Fog visual handled in shader; no THREE.Fog needed
 
-    scene.fog = new THREE.FogExp2(bgColor, 0.035);
-    
-    const camera = new THREE.PerspectiveCamera(
-      50,
-      window.innerWidth / window.innerHeight,
-      0.1,
-      200 
-    );
+    const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 200);
     camera.position.set(0, 18, 35);
     camera.lookAt(0, -2, 0);
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(config.pixelRatio);
-    
     mountRef.current.appendChild(renderer.domElement);
 
-    // --- Lighting ---
-    const ambientLight = new THREE.AmbientLight(0xffffff, isDark ? 0.6 : 0.7);
-    scene.add(ambientLight);
-
-    const dirLight = new THREE.DirectionalLight(dirLightColor, isDark ? 0.5 : 0.8);
-    dirLight.position.set(20, 30, 20);
-    scene.add(dirLight);
-
-    // --- Particles (InstancedMesh) ---
-    const cols = config.cols;
-    const rows = config.rows;
-    const count = cols * rows;
-    
+    // ── Geometry & Material ──
+    const { cols, rows, spacing } = config;
+    const count    = cols * rows;
     const geometry = new THREE.SphereGeometry(0.1, config.geoDetail, config.geoDetail);
-    
-    const material = new THREE.MeshPhongMaterial({
-      color: 0xffffff, // Must stay white so instance colors show true-to-color
-      shininess: 80,
-      specular: particleColor,
+
+    const uniforms = {
+      uTime:             { value: 0 },
+      uMouse:            { value: new THREE.Vector2(0, 0) },
+      uInteraction:      { value: 0 },
+      uCols:             { value: cols },
+      uRows:             { value: rows },
+      uSpacing:          { value: spacing },
+      uBaseColor:        { value: new THREE.Color(particleColor) },
+      uLedColor:         { value: new THREE.Color(0xffffff) },
+      uDirLightDir:      { value: new THREE.Vector3(20, 30, 20).normalize() },
+      uDirLightColor:    { value: new THREE.Color(dirLightHex) },
+      uDirLightIntensity:{ value: dirLightIntens },
+      uAmbientIntensity: { value: ambientIntens },
+      uSpecularColor:    { value: new THREE.Color(particleColor) },
+      uFogColor:         { value: new THREE.Color(bgColor) },
+      uFogDensity:       { value: 0.035 },
+    };
+
+    const material = new THREE.ShaderMaterial({
+      uniforms,
+      vertexShader,
+      fragmentShader,
     });
 
+    // ── InstancedMesh — matrices set ONCE to identity, never touched again ──
     const mesh = new THREE.InstancedMesh(geometry, material, count);
-    mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+    mesh.frustumCulled = false;    // Our grid extends far; skip Three.js culling
+    mesh.matrixAutoUpdate = false; // We never move the mesh object itself
+
+    const identity = new THREE.Matrix4();
+    for (let i = 0; i < count; i++) mesh.setMatrixAt(i, identity);
+
+    // Mark STATIC — driver can cache this buffer on the GPU
+    mesh.instanceMatrix.setUsage(THREE.StaticDrawUsage);
+    mesh.instanceMatrix.needsUpdate = true;
+
     scene.add(mesh);
 
-    const dummy = new THREE.Object3D();
-    
-    const spacing = config.spacing; 
-    
-    const offsetX = (cols * spacing) / 2;
-    const offsetZ = (rows * spacing) / 2;
-
-    // --- Interaction State ---
-    const raycaster = new THREE.Raycaster();
-    const pointer = new THREE.Vector2();
-    const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
-    const targetVector = new THREE.Vector3();
-    
+    // ── Interaction ──
+    const raycaster   = new THREE.Raycaster();
+    const pointer     = new THREE.Vector2();
+    const plane       = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+    const targetVec   = new THREE.Vector3();
     const smoothTarget = new THREE.Vector3();
     let interactionStrength = 0;
 
-    // --- Animation Loop ---
+    // ── Animation loop — FPS-capped at 60 ──
     const clock = new THREE.Clock();
+    const targetInterval = 1000 / 60;
+    let lastTimestamp = 0;
     let animationId;
 
-    const animate = () => {
+    const animate = (timestamp) => {
       animationId = requestAnimationFrame(animate);
-      
+
+      // Skip frame if we're ahead of 60fps — saves GPU on 120/144hz screens
+      if (timestamp - lastTimestamp < targetInterval) return;
+      lastTimestamp = timestamp;
+
       const time = clock.getElapsedTime();
-      
+
       raycaster.setFromCamera(pointer, camera);
-      raycaster.ray.intersectPlane(plane, targetVector);
-      
-      const distToCenter = targetVector.length();
-      const maxDist = 45;
-      const targetStrength = (distToCenter < maxDist) ? 1 : 0;
-      
+      raycaster.ray.intersectPlane(plane, targetVec);
+
+      const targetStrength = targetVec.length() < 45 ? 1 : 0;
       interactionStrength += (targetStrength - interactionStrength) * 0.05;
-      smoothTarget.lerp(targetVector, 0.1);
+      smoothTarget.lerp(targetVec, 0.1);
 
-      let i = 0;
-      
-      for (let x = 0; x < cols; x++) {
-        for (let z = 0; z < rows; z++) {
-          
-          const posX = x * spacing - offsetX;
-          const posZ = z * spacing - offsetZ;
+      // ✅ Only 3 uniform updates — zero per-instance CPU work
+      uniforms.uTime.value        = time;
+      uniforms.uMouse.value.set(smoothTarget.x, smoothTarget.z);
+      uniforms.uInteraction.value = interactionStrength;
 
-          const distGlobal = Math.sqrt(posX * posX + posZ * posZ);
-          let y = Math.sin(distGlobal * 0.15 - time * 0.8) * 1.0 +
-                  Math.sin(posX * 0.3 + time * 0.5) * 0.5;
-
-          const dx = posX - smoothTarget.x;
-          const dz = posZ - smoothTarget.z;
-          const distToMouse = Math.sqrt(dx*dx + dz*dz);
-
-          // --- LED Glow Logic ---
-          let glowFactor = 0;
-          if (interactionStrength > 0.01) {
-              const falloff = Math.exp(-distToMouse * 0.15);  
-              const ripple = Math.sin(distToMouse * 0.8 - time * 3.0) * 1.5;
-              y += ripple * falloff * interactionStrength;
-
-              // The maxGlowRadius determines how wide the white light spreads
-              const maxGlowRadius = 10; 
-              if (distToMouse < maxGlowRadius) {
-                glowFactor = Math.pow(1 - (distToMouse / maxGlowRadius), 2) * interactionStrength;
-              }
-          }
-
-          tempColor.lerpColors(baseColorThree, ledColorThree, glowFactor);
-          mesh.setColorAt(i, tempColor);
-          // ---------------------------
-
-          dummy.position.set(posX, y, posZ);
-          
-          const s = 0.5 + (Math.max(0, y + 3) / 6) * 0.8;
-          dummy.scale.set(s, s, s);
-
-          dummy.updateMatrix();
-          mesh.setMatrixAt(i++, dummy.matrix);
-        }
-      }
-      
-      mesh.instanceMatrix.needsUpdate = true;
-      mesh.instanceColor.needsUpdate = true; 
       renderer.render(scene, camera);
     };
 
@@ -191,36 +242,35 @@ export default function ParticleWaves() {
       renderer.setSize(window.innerWidth, window.innerHeight);
     };
 
-    const handleMouseMove = (event) => {
-      pointer.x = (event.clientX / window.innerWidth) * 2 - 1;
-      pointer.y = -(event.clientY / window.innerHeight) * 2 + 1;
+    const handleMouseMove = (e) => {
+      pointer.x =  (e.clientX / window.innerWidth)  * 2 - 1;
+      pointer.y = -(e.clientY / window.innerHeight) * 2 + 1;
     };
 
     window.addEventListener('resize', handleResize);
     window.addEventListener('mousemove', handleMouseMove);
-
-    animate();
+    animationId = requestAnimationFrame(animate);
 
     return () => {
       window.removeEventListener('resize', handleResize);
       window.removeEventListener('mousemove', handleMouseMove);
       cancelAnimationFrame(animationId);
-      if (mountRef.current) {
+      if (mountRef.current?.contains(renderer.domElement)) {
         mountRef.current.removeChild(renderer.domElement);
       }
       geometry.dispose();
       material.dispose();
+      renderer.dispose();
     };
-  }, [theme]); 
+  }, [theme]);
 
   return (
     <div className="fixed top-0 left-0 -z-10 w-full h-screen bg-white dark:bg-black overflow-hidden font-sans text-slate-900 dark:text-slate-100">
       <div ref={mountRef} className="absolute inset-0 z-0" />
-
       <div className="absolute bottom-8 right-8 z-10 flex gap-4">
-        <button 
+        <button
           onClick={() => setShowUI(!showUI)}
-          className="p-3 rounded-full bg-white/80 dark:bg-black/80 backdrop-blur-sm shadow-lg hover:bg-white dark:hover:bg-black hover:scale-105 transition-all active:scale-95 group"
+          className="p-3 rounded-full bg-white/80 dark:bg-black/80 backdrop-blur-sm shadow-lg hover:bg-white dark:hover:bg-black hover:scale-105 transition-all active:scale-95"
         >
           <Info className="w-5 h-5 text-slate-700 dark:text-slate-300" />
         </button>
