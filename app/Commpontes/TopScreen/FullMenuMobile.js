@@ -1,37 +1,49 @@
 "use client";
+import { createPortal } from "react-dom"; // 1. Import createPortal
 import { useTheme } from "next-themes";
-import { useState } from "react";
+import { useState, useEffect } from "react"; // 2. Add useEffect
 import { motion, AnimatePresence } from "framer-motion";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCaretUp} from "@fortawesome/free-solid-svg-icons";
+import { faCaretUp } from "@fortawesome/free-solid-svg-icons";
 import { useSelector, useDispatch } from "react-redux";
 import { setLanguage } from "../../redux/languageSlice";
 import SoundWaveIcon from "./SoundWave";
 import { setPlayingSound } from "../../redux/soundSlice";
 
-const FullMenuMobile = ({ onToggle,navTexts,languages }) => {
+const FullMenuMobile = ({ onToggle, navTexts, languages }) => {
   const { systemTheme, theme, setTheme } = useTheme();
   const currentTheme = theme === "system" ? systemTheme : theme;
   const [showDropDownLang, setShowDropDownLang] = useState(false);
+  
+  // 3. Add mounted state for Next.js SSR compatibility
+  const [mounted, setMounted] = useState(false); 
+  
   const language = useSelector((state) => state.language);
   const dispatch = useDispatch();
   const texts = navTexts[language.indice] || navTexts.Eng;
   const isArabic = language.indice === "Ar";
   const playingSound = useSelector((state) => state.sound.playingSound);
 
+  // 4. Set mounted to true once the component loads on the client
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
+  // 5. Prevent rendering on the server where document.body is undefined
+  if (!mounted) return null; 
 
-  return (
+  // 6. Wrap your return in createPortal and attach it to document.body
+  return createPortal(
     <motion.div
       transition={{ ease: "circInOut", type: "spring", stiffness: 250, damping: 25 }}
       initial={{ opacity: 0, scaleY: 0.2, y: "-60%" }}
       animate={{ opacity: 1, scaleY: 1, y: 0 }}
       exit={{ opacity: 0, scaleY: 0.2, y: "60%", duration: 0.2, delay: 0.1 }}
-      className="w-screen h-screen bg-lightGray/70 dark:bg-darGray backdrop-blur-xl fixed top-0 left-0 z-[99999] lg:hidden"
+      className="w-screen h-screen bg-lightGray/70 dark:bg-darGray backdrop-blur-xl fixed top-0 left-0 z-[99999999] lg:hidden"
     >
       <div className="w-full h-full items-center overflow-scroll pb-20 flex flex-col relative p-2">
-        <div dir={isArabic?"rtl":"ltr"} className={`w-[95%]  md:w-[72%] tiny:mt-[80px] short:mt-[15%] medium:mt-[35%] mt-[35%]  flex flex-col `}>
+        <div dir={isArabic ? "rtl" : "ltr"} className={`w-[95%] md:w-[72%] tiny:mt-[80px] short:mt-[15%] medium:mt-[35%] mt-[35%] flex flex-col `}>
           {texts.map((text, i) => (
             <motion.a
               key={text}
@@ -42,12 +54,12 @@ const FullMenuMobile = ({ onToggle,navTexts,languages }) => {
               transition={{ type: "spring", delay: i * 0.11 }}
               onClick={onToggle}
             >
-              {i === 0 && <span className={`w-9 h-9 bg-theBlue dark:bg-theOrange ${isArabic?"ml-3":"mr-3"} rounded-full `}></span>}
+              {i === 0 && <span className={`w-9 h-9 bg-theBlue dark:bg-theOrange ${isArabic ? "ml-3" : "mr-3"} rounded-full `}></span>}
               {text}
             </motion.a>
           ))}
         </div>
-        <div className={`fixed bottom-10  flex items-stretch justify-center pb-10 p-6 gap-2 ${isArabic ? "flex-row-reverse left-0":"right-0"}`}>
+        <div className={`fixed bottom-10 flex items-stretch justify-center pb-10 p-6 gap-2 ${isArabic ? "flex-row-reverse left-0" : "right-0"}`}>
           <AnimatePresence>
             <motion.div
               initial={{ x: 40, opacity: 0, scale: 0.8 }}
@@ -76,7 +88,7 @@ const FullMenuMobile = ({ onToggle,navTexts,languages }) => {
                           dispatch(setLanguage(lang));
                           setShowDropDownLang(false);
                         }}
-                        className={`py-1 hover:underline clickable ${lang.indice==="Ar"&&"font-arb"}`}
+                        className={`py-1 hover:underline clickable ${lang.indice === "Ar" && "font-arb"}`}
                       >
                         {lang.value}
                       </p>
@@ -87,7 +99,7 @@ const FullMenuMobile = ({ onToggle,navTexts,languages }) => {
             </motion.div>
           </AnimatePresence>
           <AnimatePresence>
-             <SoundWaveIcon isMobile={true} onToggle={() => dispatch(setPlayingSound(!playingSound))} isPlaying={playingSound} language={language.value} />
+            <SoundWaveIcon isMobile={true} onToggle={() => dispatch(setPlayingSound(!playingSound))} isPlaying={playingSound} language={language.value} />
             <motion.button
               key="theme-toggle"
               initial={{ x: 40, opacity: 0, scale: 0.8, rotate: 0 }}
@@ -103,13 +115,11 @@ const FullMenuMobile = ({ onToggle,navTexts,languages }) => {
                 alt="Switch theme"
               />
             </motion.button>
-               
-
           </AnimatePresence>
         </div>
       </div>
-    </motion.div>
+    </motion.div>,
+    document.body // <-- Renders exactly at the end of the <body> tag
   );
 };
 export default FullMenuMobile;
-

@@ -38,7 +38,7 @@ export default function NavLinks({ mode1, language }) {
             <motion.div
               key={text}
               // Added "group" here so text hover state syncs with the container
-              className="relative w-full lg:w-[80px] xl:w-[100px] 2xl:w-[120px] flex items-center justify-center py-3 cursor-pointer group"
+              className="relative w-full lg:w-[80px] xl:w-[100px] 2xl:w-[120px] flex items-center justify-center py-3 clickableMenu group"
               onMouseEnter={() => setHoveredIndex(i)}
               variants={capsuleVariants}
               animate={mode1 ? "hidden" : "visible"}
@@ -72,7 +72,7 @@ export default function NavLinks({ mode1, language }) {
               <motion.p
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className={`relative z-10 opacity-90 transition-opacity duration-200 group-hover:opacity-100 ${
+                className={`relative z-10 opacity-90 transition-opacity duration-200 group-hover:opacity-100 hidden lg:block ${
                   isArabic ? "text-right" : "text-left"
                 }`}
               >

@@ -157,6 +157,8 @@ const Card = React.memo(({
   );
 });
 
+Card.displayName = "Card";
+
 export default function ArchedCarousel() {
   const baseX = useMotionValue(0);
   const [isMounted, setIsMounted] = useState(false);

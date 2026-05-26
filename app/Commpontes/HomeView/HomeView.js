@@ -22,10 +22,11 @@ export default function HomeView() {
    <>
 
     <div className="w-screen flex flex-col justify-center relative items-center overflow-x-hidden pt-10 z-[10000000] ">
-      <UpSpace/>
-   
+
+
      {
       /*
+      <UpSpace />
        <LayoutGroup>
 
         <motion.div className='w-full relative flex items-center justify-center mb-10  ' layout={true} transition={{type:"spring"}}>
@@ -49,10 +50,7 @@ export default function HomeView() {
       */
      }
 
-     <div className='w-full h-[1000px]'></div>
-
     </div>
-
    </>
   );
 

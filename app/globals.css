@@ -278,6 +278,7 @@ body, a, button, input, div, span {
   width: 45px;
   height: 45px;
   background-color: rgba(200, 200, 200, 0.4);
+  color: #ffffff00;
   margin-left: -25px;
   margin-top: -25px;
   filter: none;
@@ -287,7 +288,7 @@ body, a, button, input, div, span {
 .snap2 {
   width: 0px;
   height: 0px;
-  background-color: rgba(200, 200, 200, 0.1);
+  background-color: rgba(200, 200, 200, 0.2);
   filter: blur(20px) !important;
   transition: cubic-bezier(0.175, 0.885, 0.32, 1.275);
   backdrop-filter: none;
@@ -384,4 +385,17 @@ body, a, button, input, div, span {
   /* Ensures clicks pass through the border to the card content */
   pointer-events: none; 
 
+}
+.logoCarousel {
+  width: 200%;
+  animation: logo-marquee 34s linear infinite;
+}
+
+@keyframes logo-marquee {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0%);
+  }
 }

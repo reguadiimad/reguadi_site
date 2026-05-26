@@ -2,16 +2,11 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
-
-
-
-
-
-
-const SoundWaveIcon = ({ isPlaying, onToggle,language,hoverAllow=true,isMobile=false }) => {
+const SoundWaveIcon = ({ isPlaying, onToggle,language,hoverAllow=true,isMobile=false,mode1 }) => {
   const [barHeights, setBarHeights] = useState([0.25, 0.25, 0.25, 0.25, 0.25]);
   const [isHovered, setIsHovered] = useState(isMobile?true:false);
   const volumeText = language === "Ar" ? (isPlaying ? "إيقاف الأصوات" : "تشغيل الأصوات") : language === "Fr" ? (isPlaying ? "Désactiver les sons" : "Activer les sons") : (isPlaying ? "Turn off sounds" : "Turn on sounds");
+  const maxBarHeight = 1.5;
 
   useEffect(() => {
     let intervalId = null;
@@ -53,14 +48,14 @@ const SoundWaveIcon = ({ isPlaying, onToggle,language,hoverAllow=true,isMobile=f
 
   return (
     <motion.div
-      initial={{opacity: 0, scale: 0.8}} animate={{opacity: 1, scale: 1}} exit={{opacity: 0, scale: 0.8}}
-      transition={{type:"spring",stiffness:300,damping:20,delay:0.2}}
       title={volumeText}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onClick={onToggle}
       key={"gu"}
-      className={`relative flex items-center clickable  spdy   hover:px-[10px] duration-75 justify-center p-1 gap-0.5 h-10 `}
+      whileHover={{ scale: mode1 ? 1 : 1.06 }}
+      whileTap={{ scale: 0.94 }}
+      className="relative flex h-10 items-center justify-center gap-0.5 rounded-full p-1 clickable"
     >
       <AnimatePresence>
         {(isHovered && hoverAllow) && (
@@ -83,8 +78,11 @@ const SoundWaveIcon = ({ isPlaying, onToggle,language,hoverAllow=true,isMobile=f
             isPlaying ? "bg-theBlue dark:bg-theOrange" : "bg-black/40 dark:bg-white"
           }`}
           style={{
-            height: `${height}rem`,
-            transition: "height 0.3s ease-in-out",
+            height: `${maxBarHeight}rem`,
+            transform: `scaleY(${height / maxBarHeight})`,
+            transformOrigin: "center",
+            transition: "transform 0.3s ease-in-out",
+            willChange: "transform",
           }}
         />
       ))}

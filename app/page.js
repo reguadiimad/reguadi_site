@@ -8,6 +8,7 @@ import NavBar from "./Commpontes/TopScreen/NavBar/NavBar";
 import BtmScreen from "./Commpontes/BtmScreen/BtmScreen";
 import HomeView from "./Commpontes/HomeView/HomeView";
 import ParticleWaves from "./Commpontes/GlobalComponotes/ParticleWaves";
+import About from "./Commpontes/About/About";
 
 export default function Home() {
   const [mode1, setMode1] = useState(false);
@@ -93,7 +94,7 @@ export default function Home() {
     <>
       <div className={`${isArabic && "font-arb"} w-screen flex flex-col items-center selection:bg-theBlue selection:text-white dark:selection:bg-theOrange`}>
         
-        <ParticleWaves />
+       <ParticleWaves />
 
         {/* Note: I kept your blur effect, but ensure the inner divs have a CSS class or styling to be visible! */}
         <AnimatePresence>
@@ -121,6 +122,7 @@ export default function Home() {
 
         <NavBar mode1={mode1} toggleMode={() => setMode1(!mode1)} />
         <HomeView />
+        <About />
         <BtmScreen currentCapsule={currentCapsule} mode1={mode1} />
       </div>
     </>
