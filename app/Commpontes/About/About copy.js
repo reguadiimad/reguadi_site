@@ -1,6 +1,4 @@
-"use client";
-
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef } from "react";
 import {
   motion,
   useScroll,
@@ -14,26 +12,19 @@ import {
 import Monoco from "@monokai/monoco-react";
 import "@fontsource/instrument-serif/400.css";
 import "@fontsource/instrument-serif/400-italic.css";
+import InfiniteLogoCarousel from "./InfiniteLogoCarousel";
 
 const paragraphText =
   "A full-stack craftsman with a front-end soul and a mind that never stops creating. From pixel-perfect interfaces to the backend powering them — motion, responsiveness, AI, and your data, handled end-to-end.";
 
-const HERO_ITALIC_WORDS = new Set([
-  "full-stack",
-  "front-end",
-  "ai",
-  "end-to-end",
-]);
+const HERO_ITALIC_WORDS = new Set(["full-stack", "front-end", "ai", "end-to-end"]);
 
-const cleanWord = (word) => word.toLowerCase().replace(/[.,—–!?;:]/g, "");
-
+const cleanWord = (word) =>
+  word.toLowerCase().replace(/[.,—–!?;:]/g, "");
 const theClassName =
   "relative z-10 w-full h-auto overflow-hidden flex items-center justify-center bg-[#0b0b0e]/45 backdrop-blur-[7px] transform-gpu [transform-style:preserve-3d] shadow-[inset_0_1px_0_rgba(255,255,255,0.32),inset_0_-24px_50px_rgba(255,255,255,0.035),0_34px_95px_rgba(0,0,0,0.48),0_0_0_1px_rgba(255,255,255,0.08)] before:content-[''] before:absolute before:inset-0 before:rounded-[90px] before:pointer-events-none before:z-40 before:bg-[linear-gradient(135deg,rgba(255,255,255,0.14),rgba(255,255,255,0.02)_45%,rgba(255,255,255,0.10))] before:opacity-50 after:content-[''] after:absolute after:inset-[1px] after:rounded-[89px] after:pointer-events-none after:z-40 after:border after:border-white/10";
 
 const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
-
-const mapProgress = (value, start, end) =>
-  clamp((value - start) / (end - start), 0, 1);
 
 const mouseSpring = {
   stiffness: 90,
@@ -47,11 +38,6 @@ const About = () => {
   const frameRef = useRef(null);
   const reduceMotion = useReducedMotion();
 
-  const prevScrollY = useRef(0);
-  const hasPlayedReadAnimation = useRef(false);
-
-  const [isScrollReleased, setIsScrollReleased] = useState(false);
-
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ["start start", "end end"],
@@ -60,54 +46,19 @@ const About = () => {
   const readProgress = useMotionValue(0);
 
   useMotionValueEvent(scrollYProgress, "change", (latest) => {
-    if (reduceMotion) {
-      hasPlayedReadAnimation.current = true;
-      readProgress.set(1);
-      setIsScrollReleased(true);
-      return;
-    }
+    const current = readProgress.get();
+    const faster = clamp(latest * 1.55, 0, 1);
 
-    if (hasPlayedReadAnimation.current) {
-      readProgress.set(1);
-      return;
-    }
-
-    const isScrollingDown = latest > prevScrollY.current;
-    prevScrollY.current = latest;
-
-    if (latest >= 0.72) {
-      hasPlayedReadAnimation.current = true;
-      readProgress.set(1);
-      setIsScrollReleased(true);
-      return;
-    }
-
-    if (isScrollingDown) {
-      // Starts immediately after pin.
-      const target = mapProgress(latest, 0.0, 0.72);
-      readProgress.set(target);
-    } else {
-      // Faster reverse before the first complete only.
-      const target = mapProgress(latest, 0.05, 0.42);
-      readProgress.set(target);
+    if (faster > current) {
+      readProgress.set(faster);
     }
   });
 
   const smoothProgress = useSpring(readProgress, {
-    stiffness: 260,
-    damping: 30,
-    mass: 0.16,
+    stiffness: 190,
+    damping: 32,
+    mass: 0.2,
   });
-
-  // About Me transition
-  const aboutTitleOpacity = useTransform(smoothProgress, [0, 0.08], [0, 1]);
-  const aboutTitleRevealY = useTransform(smoothProgress, [0, 0.08], [14, 0]);
-  const aboutTitleScale = useTransform(smoothProgress, [0, 0.08], [0.92, 1]);
-  const aboutTitleBlur = useTransform(
-    smoothProgress,
-    [0, 0.08],
-    ["blur(8px)", "blur(0px)"]
-  );
 
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
@@ -182,23 +133,14 @@ const About = () => {
   const words = useMemo(() => paragraphText.split(" "), []);
 
   return (
-    <div
-      ref={containerRef}
-      className={`relative w-full ${
-        isScrollReleased ? "h-screen" : "h-[250vh]"
-      }`}
-    >
-      <div
-        className={`${
-          isScrollReleased ? "relative" : "sticky top-0"
-        } h-screen w-full overflow-hidden flex items-center justify-center`}
-      >
+    <div ref={containerRef} className="relative w-full">
+      <div className="sticky top-0 h-screen w-full overflow-hidden flex items-center justify-center">
         <div
           ref={motherZoneRef}
           onPointerMove={handlePointerMove}
           onPointerLeave={handlePointerLeave}
           style={{ perspective: "1800px" }}
-          className="w-[85%] flex items-center justify-center px-4 py-2"
+          className="w-[75%] flex items-center justify-center px-4 py-8"
         >
           <motion.div
             style={{
@@ -215,21 +157,16 @@ const About = () => {
                 x: reduceMotion ? 0 : shadowX,
                 y: reduceMotion ? 0 : shadowY,
               }}
-              className="absolute inset-12 -z-10 rounded-[90px] dark:bg-black/70 bg-lightGray pointer-events-none"
+              className="absolute inset-12 -z-10 rounded-[90px] bg-black/70 blur-[58px] pointer-events-none"
             />
 
-            <Monoco
-              borderRadius={90}
-              clip={true}
-              smoothing={1}
-              className={theClassName}
-            >
+            <Monoco borderRadius={90} clip={true} smoothing={1} className={theClassName}>
               <motion.div
                 style={{
                   background: glare,
                   z: 120,
                 }}
-                className="absolute inset-0 z-30 py-10 pointer-events-none rounded-[90px] mix-blend-screen"
+                className="absolute inset-0 z-30 pointer-events-none rounded-[90px] mix-blend-screen"
               />
 
               <motion.div
@@ -243,8 +180,8 @@ const About = () => {
               >
                 <video
                   className="
-                    h-full w-full object-cover blur-md
-                    dark:opacity-70 dark:brightness-[0.56] dark:contrast-[1.18] dark:saturate-[1.18] opacity-50
+                    h-full w-full object-cover
+                    opacity-70 brightness-[0.56] contrast-[1.18] saturate-[1.18]
                   "
                   autoPlay
                   loop
@@ -265,38 +202,30 @@ const About = () => {
                   y: reduceMotion ? 0 : titleY,
                   z: 26,
                 }}
-                className="absolute font-['Instrument_Serif'] leading-[0.95] top-20 left-0 right-0 z-10 flex justify-center pointer-events-none transform-gpu"
+                className="absolute font-['Instrument_Serif']  leading-[0.95] top-20 left-0 right-0 z-10 flex justify-center pointer-events-none transform-gpu"
               >
-                <motion.p
-                  style={{
-                    opacity: reduceMotion ? 1 : aboutTitleOpacity,
-                    y: reduceMotion ? 0 : aboutTitleRevealY,
-                    scale: reduceMotion ? 1 : aboutTitleScale,
-                    filter: reduceMotion ? "blur(0px)" : aboutTitleBlur,
-                  }}
-                  className="text-2xl mt-2 italic text-white/38 font-medium will-change-transform"
-                >
-                  About Me
-                </motion.p>
+                <p className="text-xl mt-2 italic  text-white/38 font-medium">
+                 About Me
+                </p>
               </motion.div>
 
-              <motion.div
-                style={{
-                  x: reduceMotion ? 0 : textX,
-                  y: reduceMotion ? 0 : textY,
-                  z: 64,
-                  transformStyle: "preserve-3d",
-                }}
-                className="relative z-20 flex w-full font-clashDisplay flex-col items-center justify-center px-8 pt-32 pb-20 md:px-12 md:pt-36 md:pb-24 lg:px-16 lg:pt-40 lg:pb-24 pointer-events-none transform-gpu"
-              >
+             <motion.div
+              style={{
+                x: reduceMotion ? 0 : textX,
+                y: reduceMotion ? 0 : textY,
+                z: 64,
+                transformStyle: "preserve-3d",
+              }}
+              className="relative z-20 flex w-full font-clashDisplay flex-col items-center justify-center px-8 pt-32 pb-20 md:px-12 md:pt-36 md:pb-24 lg:px-16 lg:pt-40 lg:pb-24 pointer-events-none transform-gpu"
+            >
                 <p
                   className="
                     w-[90%] select-none text-center
-                    text-7xl leading-[0.95]
+                    text-[90px] leading-[0.95]
                     flex flex-wrap justify-center
                     text-white/90
                     drop-shadow-[0_14px_25px_rgba(0,0,0,0.55)]
-                    [transform-style:preserve-3d]
+                    [transform-style:preserve-3d] mb-10
                   "
                 >
                   {words.map((word, wordIndex) => {
@@ -304,17 +233,21 @@ const About = () => {
                     const end = (wordIndex + 1) / words.length;
 
                     return (
-                      <Word
-                        key={`${word}-${wordIndex}`}
-                        progress={smoothProgress}
-                        range={[start, end]}
-                        isItalic={HERO_ITALIC_WORDS.has(cleanWord(word))}
-                      >
-                        {word}
-                      </Word>
+                    <Word
+                      key={`${word}-${wordIndex}`}
+                      progress={smoothProgress}
+                      range={[start, end]}
+                      isItalic={HERO_ITALIC_WORDS.has(cleanWord(word))}
+                    >
+                      {word}
+                    </Word>
                     );
                   })}
                 </p>
+
+                  <div className="w-[120%] h-[1px] mt-10 bg-white/10"/>  
+                  <InfiniteLogoCarousel />
+
               </motion.div>
             </Monoco>
           </motion.div>
@@ -332,7 +265,7 @@ const Word = memo(({ children, progress, range, isItalic }) => {
   return (
     <span
       className={`relative mr-4 inline-block whitespace-nowrap [transform-style:preserve-3d] ${
-        isItalic ? "italic opacity-95 font-[Instrument_Serif]" : ""
+        isItalic ? "italic opacity-95" : ""
       }`}
     >
       {characters.map((char, index) => {
@@ -340,11 +273,7 @@ const Word = memo(({ children, progress, range, isItalic }) => {
         const end = range[0] + step * (index + 1);
 
         return (
-          <Character
-            key={`${char}-${index}`}
-            progress={progress}
-            range={[start, end]}
-          >
+          <Character key={`${char}-${index}`} progress={progress} range={[start, end]}>
             {char}
           </Character>
         );
@@ -354,12 +283,10 @@ const Word = memo(({ children, progress, range, isItalic }) => {
 });
 
 const Character = memo(({ children, progress, range }) => {
-  const opacity = useTransform(progress, range, [0.18, 1]);
-  const y = useTransform(progress, range, [22, 0]);
-  const z = useTransform(progress, range, [-16, 14]);
-  const scale = useTransform(progress, range, [0.9, 1]);
-  const rotateX = useTransform(progress, range, [14, 0]);
-  const filter = useTransform(progress, range, ["blur(6px)", "blur(0px)"]);
+  const opacity = useTransform(progress, range, [0.28, 1]);
+  const y = useTransform(progress, range, [1, 0]);
+  const z = useTransform(progress, range, [-5, 9]);
+  const filter = useTransform(progress, range, ["blur(1px)", "blur(0px)"]);
 
   return (
     <motion.span
@@ -367,8 +294,6 @@ const Character = memo(({ children, progress, range }) => {
         opacity,
         y,
         z,
-        scale,
-        rotateX,
         filter,
       }}
       className="inline-block will-change-transform"
@@ -377,5 +302,7 @@ const Character = memo(({ children, progress, range }) => {
     </motion.span>
   );
 });
+
+
 
 export default memo(About);

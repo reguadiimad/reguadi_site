@@ -3,6 +3,8 @@ import "./globals.css";
 import "./lib/fontawesome";
 import {ThemeProvider} from "./utils/ThemeProvider";
 import {Providers} from "./Providers";
+import "@fontsource/instrument-serif/400.css";
+import "@fontsource/instrument-serif/400-italic.css";
 
 
 export const metadata = {

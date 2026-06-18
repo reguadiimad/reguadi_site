@@ -109,7 +109,7 @@ export default function Blobs() {
   }
 
   return (
-    <div className="w-full flex items-center justify-center overflow-visible h-60 z-10000 relative">
+    <div className="w-full flex items-center justify-center overflow-visible scale-90 scale-x-95 -mb-10 z-10000 relative">
       
       {/* 4. Optional loading overlay based on the hook's progress state */}
      {!ready && (

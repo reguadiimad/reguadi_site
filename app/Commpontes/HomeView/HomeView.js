@@ -8,9 +8,7 @@ import WhatICanDo from './WhatICanDo';
 
 
 
-export default function HomeView() {
-    const [typingComplete, setTypingComplete] = useState(false);
-    const [showTyping, setShowTyping] = useState(false);
+export default function HomeView({showTyping, setShowTyping,typingComplete, setTypingComplete}) {
     const handleAnimationComplete = useCallback(() => {
       setTimeout(() => {
         setShowTyping(true);
@@ -23,9 +21,6 @@ export default function HomeView() {
 
     <div className="w-screen flex flex-col justify-center relative items-center overflow-x-hidden pt-10 z-[10000000] ">
 
-
-     {
-      /*
       <UpSpace />
        <LayoutGroup>
 
@@ -47,8 +42,7 @@ export default function HomeView() {
           <WhatICanDo />
         </div>
       )}
-      */
-     }
+     
 
     </div>
    </>

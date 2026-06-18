@@ -1,13 +1,13 @@
 "use client";
-import { useState, useEffect } from "react";
-import { LiquidGlass } from "@liquidglass/react";
-import { motion, AnimatePresence } from "framer-motion";
 
-const GlassLogo = ({ 
-  width, 
-  className = "", 
-  isDark = true, 
-  isArabic = false 
+import { useEffect, useState } from "react";
+import { LiquidGlass } from "@liquidglass/react";
+
+const GlassLogo = ({
+  width,
+  className = "",
+  isDark = true,
+  isArabic = false,
 }) => {
   const [mounted, setMounted] = useState(false);
 
@@ -15,81 +15,83 @@ const GlassLogo = ({
     setMounted(true);
   }, []);
 
-  const config = {
-    en: {
-      src: isDark ? "/logos/glassR 3.png" : "/logos/glassR 2.png",
-      glassStyle: "w-[54.2%] h-[89.5%] top-[3.8%] left-[10%] rounded-tl-2xl rounded-bl-[20px]",
-    },
-    ar: {
-      src: isDark ? "/logos/glass Ar2.png" : "/logos/glass Ar.png",
-      glassStyle: "w-[37.71%] h-[70.34%] top-[10.8886%] left-[30%] rotate-20",
-    }
-  };
+  const enGlassStyle =
+    "w-[54.2%] h-[89.5%] top-[3.8%] left-[10%] rounded-tl-2xl rounded-bl-[20px]";
 
-  const current = isArabic ? config.ar : config.en;
-  const aspectRatioStyle = { aspectRatio: '100 / 101.56' };
+  const arGlassStyle =
+    "w-[37.71%] h-[70.34%] top-[10.8886%] left-[30%] rotate-[20deg]";
 
-  if (!mounted) return <div className={className} style={{ width, ...aspectRatioStyle }} />;
+  const activeGlassStyle = isArabic ? arGlassStyle : enGlassStyle;
+
+  const showEnDark = mounted && !isArabic && isDark;
+  const showEnLight = mounted && !isArabic && !isDark;
+  const showArDark = mounted && isArabic && isDark;
+  const showArLight = mounted && isArabic && !isDark;
 
   return (
-    <div 
-      className={`relative shrink-0 ${className}`} 
-      style={{ width: width || undefined, ...aspectRatioStyle }}
+    <div
+      className={`relative shrink-0 isolate overflow-visible ${className}`}
+      style={{
+        width: width || undefined,
+        minWidth: width || undefined,
+        aspectRatio: "100 / 101.56",
+      }}
     >
-      <div className="w-full h-full items-center justify-center flex relative group">
-        
-        {/* 1. GLASS LAYER CONTAINER
-           Added 'transition-all duration-700 ease-[cubic-bezier(0.25,0.1,0.25,1)]' 
-           This ensures the glass shape morphs, moves, and rotates smoothly 
-           instead of snapping when switching languages.
-        */}
-        <div 
+      <div className="relative w-full h-full overflow-visible">
+        {/* GLASS LAYER */}
+        {mounted && (
+          <div
+            className={`
+              absolute z-0 overflow-hidden
+              transition-all duration-300 ease-in-out
+              ${activeGlassStyle}
+              ${isDark ? "bg-black/15" : "bg-white/10"}
+            `}
+          >
+          
+          </div>
+        )}
+
+        {/* LOGOS: static direct src paths */}
+        <img
+          src="/Logos/glassR-3.png"
+          alt="Logo EN Dark"
+          draggable={false}
           className={`
-            absolute z-0 overflow-hidden blured
-            transition-all duration-100 ease-in-out
-            ${current.glassStyle} 
-            ${isDark ? "bg-black/15" : ""}
+            absolute inset-0 z-10 w-full h-full object-contain pointer-events-none select-none
+            ${showEnDark ? "block" : "hidden"}
           `}
-        >
-          <LiquidGlass 
-              blur={isDark ? 1 : 1} 
-              contrast={isDark ? 0.85 : 1.9} 
-              brightness={isDark ? 1.2 : 1} 
-              displacementScale={1.5} 
-              elasticity={0.9} 
-              saturation={1.15} 
-              borderRadius={0}
-            />
-        </div>
-        
-        {/* 2. LOGO IMAGE WITH FRAMER MOTION
-           AnimatePresence allows us to animate the image LEAVING the DOM.
-           We use a "blur-fade" effect typical of Apple interfaces.
-        */}
-        <AnimatePresence mode="popLayout">
-          <motion.img 
-            // The key is crucial: when src changes, React sees a "new" element
-            key={current.src} 
-            src={current.src} 
-            alt="Glass Logo"
-            className="w-full z-10 h-full absolute object-contain pointer-events-none"
-            
-            // Initial state (entering)
-            initial={{ opacity: 0, filter: "blur(1px)", scale: 0.8 }}
-            
-            // Active state (visible)
-            animate={{ opacity: 1, filter: "blur(0px)", scale: 1 }}
-            
-            // Exit state (leaving)
-            exit={{ opacity: 0, filter: "blur(1px)", scale: 0.8 }}
-            
-            // Smooth spring transition
-            transition={{ 
-              duration: 0.1, 
-              ease: [0.32, 0.72, 0, 1] // Apple-style easing
-            }}
-          />
-        </AnimatePresence>
+        />
+
+        <img
+          src="/Logos/glassR-2.png"
+          alt="Logo EN Light"
+          draggable={false}
+          className={`
+            absolute inset-0 z-10 w-full h-full object-contain pointer-events-none select-none
+            ${showEnLight ? "block" : "hidden"}
+          `}
+        />
+
+        <img
+          src="/Logos/glass-Ar2.png"
+          alt="Logo AR Dark"
+          draggable={false}
+          className={`
+            absolute inset-0 z-10 w-full h-full object-contain pointer-events-none select-none
+            ${showArDark ? "block" : "hidden"}
+          `}
+        />
+
+        <img
+          src="/Logos/glass-Ar.png"
+          alt="Logo AR Light"
+          draggable={false}
+          className={`
+            absolute inset-0 z-10 w-full h-full object-contain pointer-events-none select-none
+            ${showArLight ? "block" : "hidden"}
+          `}
+        />
       </div>
     </div>
   );

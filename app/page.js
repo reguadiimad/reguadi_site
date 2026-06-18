@@ -2,30 +2,31 @@
 
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useSelector } from "react-redux";  
+import { useSelector } from "react-redux";
 
 import NavBar from "./Commpontes/TopScreen/NavBar/NavBar";
 import BtmScreen from "./Commpontes/BtmScreen/BtmScreen";
 import HomeView from "./Commpontes/HomeView/HomeView";
 import ParticleWaves from "./Commpontes/GlobalComponotes/ParticleWaves";
 import About from "./Commpontes/About/About";
+import IPadCursor from "./Commpontes/GlobalComponotes/IPadCursor";
+import Blobs from "./Commpontes/HomeView/Blobs";
 
 export default function Home() {
   const [mode1, setMode1] = useState(false);
   const [currentCapsule, setCurrentCapsule] = useState("");
+  const [showTyping, setShowTyping] = useState(false);
+  const [typingComplete, setTypingComplete] = useState(false);
 
-  // Redux states
   const language = useSelector((state) => state.language);
   const isArabic = language.indice === "Ar";
   const playingSound = useSelector((state) => state.sound.playingSound);
   const theTheme = useSelector((state) => state.theme.theme);
 
-  // 1. Moved Refs to the top level to obey the Rules of Hooks
   const prevValues = useRef({ playingSound, theTheme, language });
-  const lastY = useRef(0); // Safely initialize to 0 for Next.js SSR
+  const lastY = useRef(0);
   const direction = useRef(null);
 
-  // --- Capsule Notification Logic ---
   useEffect(() => {
     let timeoutId;
 
@@ -33,13 +34,13 @@ export default function Home() {
       setCurrentCapsule("sound");
       timeoutId = setTimeout(() => setCurrentCapsule(""), 7000);
     } else if (
-      theTheme !== prevValues.current.theTheme && 
+      theTheme !== prevValues.current.theTheme &&
       prevValues.current.theTheme !== "system"
     ) {
       setCurrentCapsule("theme");
       timeoutId = setTimeout(() => setCurrentCapsule(""), 7000);
     } else if (
-      language.indice !== prevValues.current.language.indice && 
+      language.indice !== prevValues.current.language.indice &&
       prevValues.current.language.indice
     ) {
       setCurrentCapsule("language");
@@ -51,9 +52,7 @@ export default function Home() {
     return () => clearTimeout(timeoutId);
   }, [playingSound, theTheme, language]);
 
-  // --- Scroll Direction Logic ---
   useEffect(() => {
-    // 2. Set the initial scroll position once we are safely on the client
     lastY.current = window.scrollY;
     let ticking = false;
 
@@ -61,7 +60,6 @@ export default function Home() {
       const currentY = window.scrollY;
       const delta = currentY - lastY.current;
 
-      // ignore small movements (trackpad noise)
       if (Math.abs(delta) < 8) {
         ticking = false;
         return;
@@ -69,7 +67,6 @@ export default function Home() {
 
       const newDirection = delta > 0 ? "down" : "up";
 
-      // update mode1 ONLY when direction changes
       if (newDirection !== direction.current) {
         setMode1(newDirection === "down");
         direction.current = newDirection;
@@ -87,19 +84,22 @@ export default function Home() {
     };
 
     window.addEventListener("scroll", onScroll, { passive: true });
+
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
   return (
-    <>
-      <div className={`${isArabic && "font-arb"} w-screen flex flex-col items-center selection:bg-theBlue selection:text-white dark:selection:bg-theOrange`}>
-        
-       <ParticleWaves />
+    <div
+      className={`${
+        isArabic ? "font-arb" : ""
+      } w-screen flex flex-col items-center selection:bg-theBlue selection:text-white dark:selection:bg-theOrange`}
+    >
+      <ParticleWaves/>
 
-        {/* Note: I kept your blur effect, but ensure the inner divs have a CSS class or styling to be visible! */}
-        <AnimatePresence>
-         {
-          !mode1 &&  <motion.div
+      <AnimatePresence mode="wait">
+        {!mode1 && (
+          <motion.div
+            key="gradient-blur"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -107,24 +107,34 @@ export default function Home() {
           >
             {Array.from({ length: 20 }).map((_, index) => (
               <motion.div
-                key={"blr" + index}
+                key={`blur-layer-${index}`}
                 initial={{ opacity: 0, y: 40 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 60 }}
-                transition={{ type: "spring", ease: "circInOut", delay: 0.02 * index }}
-                // NOTE: Consider adding a className here if these divs are supposed to render visible blur layers.
+                transition={{
+                  type: "spring",
+                  ease: "circInOut",
+                  delay: 0.02 * index,
+                }}
               />
             ))}
           </motion.div>
-         }
-        </AnimatePresence>
-    
+        )}
+      </AnimatePresence>
 
-        <NavBar mode1={mode1} toggleMode={() => setMode1(!mode1)} />
-        <HomeView />
-        <About />
-        <BtmScreen currentCapsule={currentCapsule} mode1={mode1} />
-      </div>
-    </>
+      <NavBar mode1={mode1} toggleMode={() => setMode1((prev) => !prev)} />
+
+
+      <IPadCursor />
+
+    <div className="w-full h-[500px]"/>
+          
+      
+
+    <div className="w-full h-[700px]"/>
+
+
+      <BtmScreen currentCapsule={currentCapsule} mode1={mode1} />
+    </div>
   );
 }
