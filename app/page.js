@@ -125,13 +125,12 @@ export default function Home() {
       <NavBar mode1={mode1} toggleMode={() => setMode1((prev) => !prev)} />
 
 
-      <IPadCursor />
 
-    <div className="w-full h-[500px]"/>
-          
-      
 
+    <div className="w-full h-[100px] lg:h-[500px]"/>
+          <About/>
     <div className="w-full h-[700px]"/>
+<IPadCursor/>
 
 
       <BtmScreen currentCapsule={currentCapsule} mode1={mode1} />

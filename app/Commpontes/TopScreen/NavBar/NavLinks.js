@@ -3,13 +3,9 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
-const navTexts = {
-  Eng: ["About", "Work", "Blog", "Resume"],
-  Ar: ["حولي", "أعمالي", "مدونة", "ملفي"],
-  Fr: ["À propos", "Travail", "Blog", "CV"],
-};
 
-export default function NavLinks({ mode1, language }) {
+
+export default function NavLinks({ mode1, language,navTexts }) {
   const isArabic = language?.indice === "Ar";
   // Default to null so the pill doesn't sit on the first item unprompted
   const [hoveredIndex, setHoveredIndex] = useState(null);

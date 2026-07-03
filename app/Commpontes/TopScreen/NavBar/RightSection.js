@@ -6,7 +6,7 @@ import { useSelector } from "react-redux";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEllipsis } from "@fortawesome/free-solid-svg-icons";
 import Monoco from "@monokai/monoco-react";
-import FullMenuMobile from "../FullMenuMobile";
+import FullMenuMobile from "./FullMenuMobile";
 
 const languages = [
   { indice: "Eng", value: "English " },

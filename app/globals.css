@@ -86,9 +86,6 @@ body {
 }
 
 /* Global Cursor Reset */
-body, a, button, input, div, span {
-  cursor: none !important;
-}
 
 /* --- Keyframes --- */
 @keyframes bounce {
@@ -293,12 +290,7 @@ body, a, button, input, div, span {
   transition: cubic-bezier(0.175, 0.885, 0.32, 1.275);
   backdrop-filter: none;
 }
-/* In your global CSS file */
-@media (pointer: fine) {
-  body {
-    cursor: none; /* Hide system cursor only if we have a fine pointer (and are replacing it) */
-  }
-}
+
 .hd{
   animation: hjj  5s ease-in-out infinite;
 
@@ -398,4 +390,10 @@ body, a, button, input, div, span {
   to {
     transform: translateX(0%);
   }
+}
+;
+
+.safariBlur {
+    -webkit-filter: blur(4px);
+
 }

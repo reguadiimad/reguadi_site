@@ -1,9 +1,9 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 
-export default function AppleXButton() {
+export default function AppleXButton({onToggle, isOpend}) {
   const [open, setOpen] = useState(false);
 
   const wrapRef = useRef(null);
@@ -12,10 +12,39 @@ export default function AppleXButton() {
   const auraRef = useRef(null);
   const glowRef = useRef(null);
 
-  const toggle = () => {
-    const next = !open;
-    setOpen(next);
+  useLayoutEffect(() => {
+    gsap.set(wrapRef.current, {
+      scale: 1,
+      transformOrigin: "50% 50%",
+      force3D: true,
+    });
 
+    gsap.set(topRef.current, {
+      x: 0,
+      y: -6,
+      rotate: 0,
+      scaleX: 1,
+      transformOrigin: "50% 50%",
+      force3D: true,
+    });
+
+    gsap.set(bottomRef.current, {
+      x: 0,
+      y: 6,
+      rotate: 0,
+      scaleX: 1,
+      transformOrigin: "50% 50%",
+      force3D: true,
+    });
+
+    gsap.set([auraRef.current, glowRef.current], {
+      opacity: 0,
+      transformOrigin: "50% 50%",
+      force3D: true,
+    });
+  }, []);
+
+  const animate = (next) => {
     gsap.killTweensOf([
       wrapRef.current,
       topRef.current,
@@ -30,14 +59,12 @@ export default function AppleXButton() {
       },
     });
 
-    // Small Apple-like press feedback
     tl.to(wrapRef.current, {
       scale: 0.88,
       duration: 0.12,
       ease: "power3.out",
     });
 
-    // Siri / FaceID aura pulse
     tl.fromTo(
       auraRef.current,
       {
@@ -72,7 +99,6 @@ export default function AppleXButton() {
       0
     );
 
-    // Bars compress first
     tl.to(
       [topRef.current, bottomRef.current],
       {
@@ -84,13 +110,12 @@ export default function AppleXButton() {
       0.03
     );
 
-    // Then morph into X / back to bars
     tl.to(
       topRef.current,
       {
         rotate: next ? 45 : 0,
         y: next ? 0 : -6,
-        scaleX: next ? 1 : 1,
+        scaleX: 1,
         duration: 0.75,
         ease: "elastic.out(1, 0.55)",
       },
@@ -102,14 +127,13 @@ export default function AppleXButton() {
       {
         rotate: next ? -45 : 0,
         y: next ? 0 : 6,
-        scaleX: next ? 1 : 1,
+        scaleX: 1,
         duration: 0.75,
         ease: "elastic.out(1, 0.55)",
       },
       0.15
     );
 
-    // Final soft rebound
     tl.to(
       wrapRef.current,
       {
@@ -121,64 +145,77 @@ export default function AppleXButton() {
     );
   };
 
+  const toggle = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    setOpen((prev) => {
+      const next = !prev;
+      animate(next);
+      return next;
+    });
+  };
+
   return (
     <button
+      onClick={onToggle}
       ref={wrapRef}
-      onClick={toggle}
+      type="button"
+      onPointerUp={toggle}
       aria-label={open ? "Close menu" : "Open menu"}
       className="
-        relative flex h-12 w-12 items-center justify-center
-        rounded-full overflow-hidden
-        bg-black/5 
-        active:scale-95
+        relative z-[1000000001]
+        flex h-12 w-12 shrink-0 items-center justify-center
+        overflow-hidden rounded-full
+    
+        pointer-events-auto touch-manipulation select-none
+        [-webkit-tap-highlight-color:transparent]
       "
     >
-      {/* Face ID / Siri aura */}
+      {/* Aura */}
       <div
         ref={auraRef}
         className="
           pointer-events-none absolute inset-1 rounded-full
-          border border-white/40
-          opacity-0
+          border border-white/40 opacity-0
         "
       />
 
+      {/* Glow */}
       <div
         ref={glowRef}
         className="
           pointer-events-none absolute h-8 w-8 rounded-full
-          bg-white/30 opacity-0
+          bg-white/20 opacity-0
         "
       />
 
       {/* Bars */}
-      <div className="relative h-6 w-8">
+      <div className="pointer-events-none relative h-6 w-8">
         <div
           ref={topRef}
-          className="
+          className={`
             absolute left-0 top-1/2 h-[3px] w-8
-            -translate-y-1/2
-            rounded-full bg-darGray
+            rounded-full transition-colors duration-300 ease-in-out
+            ${isOpend ? "dark:bg-lightGray bg-darGray" : "bg-darGray"}
             shadow-[0_0_12px_rgba(255,255,255,0.25)]
             will-change-transform
-          "
+            `}
           style={{
-            transform: "translateY(-6px)",
+            transform: "translate3d(0, -6px, 0)",
             transformOrigin: "center",
           }}
         />
 
         <div
           ref={bottomRef}
-          className="
-            absolute left-0 top-1/2 h-[3px] w-8
-            -translate-y-1/2
-            rounded-full bg-darGray
+            className={`
+              absolute left-0 top-1/2 h-[3px] w-8
+            rounded-full transition-colors duration-300 ease-in-out ${isOpend ? "dark:bg-lightGray bg-darGray" : "bg-darGray"}
             shadow-[0_0_12px_rgba(255,255,255,0.25)]
-            will-change-transform
-          "
+            will-change-transform`}
           style={{
-            transform: "translateY(6px)",
+            transform: "translate3d(0, 6px, 0)",
             transformOrigin: "center",
           }}
         />

@@ -51,6 +51,10 @@ const About = () => {
   const hasPlayedReadAnimation = useRef(false);
 
   const [isScrollReleased, setIsScrollReleased] = useState(false);
+  
+  // Gyroscope tracking states
+  const [isGyroActive, setIsGyroActive] = useState(false);
+  const [needsPermission, setNeedsPermission] = useState(false);
 
   const { scrollYProgress } = useScroll({
     target: containerRef,
@@ -83,11 +87,9 @@ const About = () => {
     }
 
     if (isScrollingDown) {
-      // Starts immediately after pin.
       const target = mapProgress(latest, 0.0, 0.72);
       readProgress.set(target);
     } else {
-      // Faster reverse before the first complete only.
       const target = mapProgress(latest, 0.05, 0.42);
       readProgress.set(target);
     }
@@ -99,7 +101,6 @@ const About = () => {
     mass: 0.16,
   });
 
-  // About Me transition
   const aboutTitleOpacity = useTransform(smoothProgress, [0, 0.08], [0, 1]);
   const aboutTitleRevealY = useTransform(smoothProgress, [0, 0.08], [14, 0]);
   const aboutTitleScale = useTransform(smoothProgress, [0, 0.08], [0.92, 1]);
@@ -145,9 +146,31 @@ const About = () => {
   const shadowX = useTransform(smoothX, [-1, 1], [18, -18]);
   const shadowY = useTransform(smoothY, [-1, 1], [18, -18]);
 
+  // Handle hardware device movement (Gyroscope)
+  const handleOrientation = useCallback((e) => {
+    if (reduceMotion) return;
+    const { beta, gamma } = e;
+    if (beta === null || gamma === null) return;
+
+    // Normal natural holding pitch/angle of a phone in hand is ~65 degrees
+    const restingBeta = 65;
+    const maxTiltRange = 24; // Lower means more sensitive tilt response
+
+    // Map gamma to mouseX (-1 to 1) and beta to mouseY (-1 to 1)
+    const calcX = clamp(gamma / maxTiltRange, -1, 1);
+    const calcY = clamp((beta - restingBeta) / maxTiltRange, -1, 1);
+
+    if (frameRef.current) cancelAnimationFrame(frameRef.current);
+    frameRef.current = requestAnimationFrame(() => {
+      mouseX.set(calcX);
+      mouseY.set(calcY);
+    });
+  }, [mouseX, mouseY, reduceMotion]);
+
+  // Track cursor tracking adjustments if mobile mode is NOT tracking hardware physics
   const handlePointerMove = useCallback(
     (e) => {
-      if (!motherZoneRef.current || reduceMotion) return;
+      if (!motherZoneRef.current || reduceMotion || isGyroActive) return;
 
       const rect = motherZoneRef.current.getBoundingClientRect();
 
@@ -161,23 +184,74 @@ const About = () => {
         mouseY.set(clamp(nextY, -1, 1));
       });
     },
-    [mouseX, mouseY, reduceMotion]
+    [mouseX, mouseY, reduceMotion, isGyroActive]
   );
 
   const handlePointerLeave = useCallback(() => {
+    if (isGyroActive) return; // Prevent resetting values when screen taps drop out
     if (frameRef.current) cancelAnimationFrame(frameRef.current);
 
     frameRef.current = requestAnimationFrame(() => {
       mouseX.set(0);
       mouseY.set(0);
     });
-  }, [mouseX, mouseY]);
+  }, [mouseX, mouseY, isGyroActive]);
+
+  // Check device capabilities on layout paint
+  useEffect(() => {
+    if (typeof window === "undefined" || reduceMotion) return;
+
+    const isIOSSafari =
+      typeof DeviceOrientationEvent !== "undefined" &&
+      // @ts-ignore
+      typeof DeviceOrientationEvent.requestPermission === "function";
+
+    if (isIOSSafari) {
+      setNeedsPermission(true);
+    } else {
+      // Direct pass for Android Chrome/Firefox touch setups
+      const isMobileDevice = window.matchMedia("(pointer: coarse)").matches;
+      if (isMobileDevice) {
+        setIsGyroActive(true);
+      }
+    }
+  }, [reduceMotion]);
+
+  // Bind/Unbind active hardware orientation listener 
+  useEffect(() => {
+    if (typeof window === "undefined" || !isGyroActive || reduceMotion) return;
+
+    window.addEventListener("deviceorientation", handleOrientation);
+    return () => {
+      window.removeEventListener("deviceorientation", handleOrientation);
+    };
+  }, [isGyroActive, reduceMotion, handleOrientation]);
 
   useEffect(() => {
     return () => {
       if (frameRef.current) cancelAnimationFrame(frameRef.current);
     };
   }, []);
+
+  // Strict iOS Safari Trigger Framework
+  const enableMotion = async () => {
+    if (
+      typeof DeviceOrientationEvent !== "undefined" &&
+      // @ts-ignore
+      typeof DeviceOrientationEvent.requestPermission === "function"
+    ) {
+      try {
+        // @ts-ignore
+        const permission = await DeviceOrientationEvent.requestPermission();
+        if (permission === "granted") {
+          setNeedsPermission(false);
+          setIsGyroActive(true);
+        }
+      } catch (err) {
+        console.error("Device orientation authorization denied:", err);
+      }
+    }
+  };
 
   const words = useMemo(() => paragraphText.split(" "), []);
 
@@ -198,7 +272,7 @@ const About = () => {
           onPointerMove={handlePointerMove}
           onPointerLeave={handlePointerLeave}
           style={{ perspective: "1800px" }}
-          className="w-[85%] flex items-center justify-center px-4 py-2"
+          className="w-[95%] lg:w-[85%] flex items-center justify-center lg:px-4 py-2"
         >
           <motion.div
             style={{
@@ -265,7 +339,7 @@ const About = () => {
                   y: reduceMotion ? 0 : titleY,
                   z: 26,
                 }}
-                className="absolute font-['Instrument_Serif'] leading-[0.95] top-20 left-0 right-0 z-10 flex justify-center pointer-events-none transform-gpu"
+                className="absolute font-['Instrument_Serif'] leading-[0.95] top-4 lg:top-20 left-0 right-0 z-10 flex justify-center pointer-events-none transform-gpu"
               >
                 <motion.p
                   style={{
@@ -274,7 +348,7 @@ const About = () => {
                     scale: reduceMotion ? 1 : aboutTitleScale,
                     filter: reduceMotion ? "blur(0px)" : aboutTitleBlur,
                   }}
-                  className="text-2xl mt-2 italic text-white/38 font-medium will-change-transform"
+                  className="text-base lg:text-2xl mt-2 italic text-white/38 font-medium will-change-transform"
                 >
                   About Me
                 </motion.p>
@@ -287,12 +361,12 @@ const About = () => {
                   z: 64,
                   transformStyle: "preserve-3d",
                 }}
-                className="relative z-20 flex w-full font-clashDisplay flex-col items-center justify-center px-8 pt-32 pb-20 md:px-12 md:pt-36 md:pb-24 lg:px-16 lg:pt-40 lg:pb-24 pointer-events-none transform-gpu"
+                className="relative z-20 flex w-full font-clashDisplay flex-col items-center justify-center px-8 pt-24 pb-20 md:px-12 md:pt-36 md:pb-24 lg:px-16 lg:pt-40 lg:pb-24 pointer-events-none transform-gpu"
               >
                 <p
                   className="
-                    w-[90%] select-none text-center
-                    text-7xl leading-[0.95]
+                    w-full lg:w-[90%] select-none text-center
+                    text-xl lg:text-7xl leading-[0.95]
                     flex flex-wrap justify-center
                     text-white/90
                     drop-shadow-[0_14px_25px_rgba(0,0,0,0.55)]
@@ -316,6 +390,16 @@ const About = () => {
                   })}
                 </p>
               </motion.div>
+
+              {/* Glassmorphic iOS Permission Trigger */}
+              {needsPermission && (
+                <button
+                  onClick={enableMotion}
+                  className="absolute bottom-6 left-1/2 -translate-x-1/2 z-50 pointer-events-auto px-5 py-2.5 text-[10px] font-semibold tracking-widest uppercase text-white/80 bg-white/[0.03] backdrop-blur-md rounded-full border border-white/10 shadow-[0_12px_40px_rgba(0,0,0,0.5)] transition-all duration-300 hover:bg-white/[0.08] active:scale-95 will-change-transform animate-pulse"
+                >
+                  Activate 3D Perspective 📱
+                </button>
+              )}
             </Monoco>
           </motion.div>
         </div>
