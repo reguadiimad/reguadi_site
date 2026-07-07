@@ -392,14 +392,7 @@ const About = () => {
               </motion.div>
 
               {/* Glassmorphic iOS Permission Trigger */}
-              {needsPermission && (
-                <button
-                  onClick={enableMotion}
-                  className="absolute bottom-6 left-1/2 -translate-x-1/2 z-50 pointer-events-auto px-5 py-2.5 text-[10px] font-semibold tracking-widest uppercase text-white/80 bg-white/[0.03] backdrop-blur-md rounded-full border border-white/10 shadow-[0_12px_40px_rgba(0,0,0,0.5)] transition-all duration-300 hover:bg-white/[0.08] active:scale-95 will-change-transform animate-pulse"
-                >
-                  Activate 3D Perspective 📱
-                </button>
-              )}
+              
             </Monoco>
           </motion.div>
         </div>

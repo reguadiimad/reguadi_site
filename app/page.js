@@ -92,7 +92,7 @@ export default function Home() {
     <div
       className={`${
         isArabic ? "font-arb" : ""
-      } w-screen flex flex-col items-center selection:bg-theBlue selection:text-white dark:selection:bg-theOrange`}
+      } w-screen flex flex-col  -mt-2 items-center selection:bg-theBlue selection:text-white dark:selection:bg-theOrange`}
     >
       <ParticleWaves/>
 
@@ -103,13 +103,13 @@ export default function Home() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="gradient-blur z-[9999999998] rotate-180 bg-gradient-to-b from-transparent to-white dark:to-black/60"
+            className="gradient-blur z-[9999999998] -mt-2 rotate-180 bg-gradient-to-b from-transparent to-white dark:to-black/60"
           >
             {Array.from({ length: 20 }).map((_, index) => (
               <motion.div
                 key={`blur-layer-${index}`}
                 initial={{ opacity: 0, y: 40 }}
-                animate={{ opacity: 1, y: 0 }}
+                animate={{ opacity: 1, y: -2 }}
                 exit={{ opacity: 0, y: 60 }}
                 transition={{
                   type: "spring",
@@ -124,12 +124,17 @@ export default function Home() {
 
       <NavBar mode1={mode1} toggleMode={() => setMode1((prev) => !prev)} />
 
+<HomeView
+        showTyping={showTyping}
+        setShowTyping={setShowTyping}
+        typingComplete={typingComplete}
+        setTypingComplete={setTypingComplete}
+      />
 
 
 
-    <div className="w-full h-[100px] lg:h-[500px]"/>
-          <About/>
-    <div className="w-full h-[700px]"/>
+          {typingComplete && <About/>}
+
 <IPadCursor/>
 
 

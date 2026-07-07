@@ -236,7 +236,7 @@ export default function ArchedCarousel() {
   });
 
   return (
-    <div className="relative w-full min-h-[500px] md:min-h-[700px] transition-colors duration-500"> 
+    <div className="relative w-full min-h-[500px] md:min-h-[700px] lg:h-[300px] transition-colors duration-500"> 
       <div className="sticky top-0 w-full h-screen flex justify-center items-start overflow-hidden pt-10 md:pt-20">
         <div className="absolute inset-0 pointer-events-none" />
         {isMounted && currentData.map((item, index) => (
