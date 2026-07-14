@@ -9,15 +9,14 @@
   font-display: swap;
 }
 
-/* 1. The Regular Style */
 @font-face {
-  font-family: 'tallFont'; /* Naming it tallFont */
+  font-family: 'tallFont';
   src: url('/fonts/bolda.ttf') format('truetype');
   font-weight: normal;
   font-style: normal;
-
   font-display: swap;
 }
+
 :root {
   --brm: 1;
 }
@@ -28,9 +27,7 @@
   }
 }
 
-/* 2. The Outline Style */
-
-/* --- Tailwind Configuration --- */
+/* --- Tailwind Variants --- */
 @custom-variant dark (&:where(.dark, .dark *));
 @custom-variant tiny (@media (height <= 450px));
 @custom-variant short (@media (450px < height <= 650px));
@@ -70,11 +67,10 @@
   .dark {
     --background: var(--color-black);
     --foreground: var(--color-white);
- 
   }
 }
 
-/* --- Base Styles --- */
+/* --- Global Cursor Nullification Setup --- */
 :root { 
   --name-line-height: 1; 
 }
@@ -85,7 +81,12 @@ body {
   font-family: 'satoshi', sans-serif;
 }
 
-/* Global Cursor Reset */
+/* Force-hides native hardware cursors exclusively for fine pointers to preserve mobile accessibility rules */
+@media (pointer: fine) {
+  html, body, a, button, input, select, textarea, [role="button"], .clickable, .clickableMenu {
+    cursor: none !important;
+  }
+}
 
 /* --- Keyframes --- */
 @keyframes bounce {
@@ -99,11 +100,11 @@ body {
   100% { filter: blur(0px); opacity: 1; }
 }
 
-/* --- Utilities --- */
+/* --- Functional Utilities --- */
 .safari-fix {
   transform: translate3d(0, 0, 0);
   -webkit-transform: translate3d(0, 0, 0);
-  will-change: transform, backdrop-filter;
+  will-change: transform;
 }
 
 .hjh {
@@ -124,10 +125,6 @@ body {
   -webkit-backdrop-filter: blur(2px);
 }
 
-.hi {
-  backdrop-filter: blur(3px);
-}
-
 .links:hover {
   text-shadow: 0px 0px 8px rgba(0, 0, 0, 0.069);
 }
@@ -140,7 +137,7 @@ body {
   box-shadow: inset 6px 6px 12px #121212ef, inset -6px -6px 12px #ffffff18;
 }
 
-/* --- Component: Navigation --- */
+/* --- Component Isolation Layer Configuration --- */
 .navBar {
   z-index: 50;
   backdrop-filter: blur(50px);
@@ -149,7 +146,6 @@ body {
   -webkit-mask-image: linear-gradient(to bottom, black, transparent);
 }
 
-/* --- Component: Gradient Blur --- */
 .gradient-blur {
   position: fixed;
   top: 0;
@@ -160,7 +156,6 @@ body {
   transition: background-color 1s ease-in-out !important;
 }
 
-/* Shared styles for gradient children */
 .gradient-blur > div,
 .gradient-blur::before,
 .gradient-blur::after {
@@ -218,7 +213,7 @@ body {
   mask: linear-gradient(to bottom, rgba(0,0,0,0) 87.5%, rgba(0,0,0,1) 100%);
 }
 
-/* --- Component: Typography & Background --- */
+/* --- Custom Interface Layers --- */
 .name {
   display: inline-block;
   line-height: var(--name-line-height);
@@ -230,8 +225,7 @@ body {
   font-variation-settings: 'wght' 700;
 }
 
-.folo, 
-.folo.trigger-animation {
+.folo {
   animation: shs 0.6s cubic-bezier(0.455, 0.03, 0.515, 0.955) forwards;
 }
 
@@ -255,145 +249,61 @@ body {
   box-shadow: inset 0 0 10px #000;
 }
 
-/* --- Component: Custom Cursor --- */
-.ipad-cursor {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 25px;
-  height: 25px;
-  border-radius: 50%;
-  pointer-events: none;
-  z-index: 9999999999;
-  margin-left: -10px; 
-  margin-top: -10px;
-  transition: width 0.3s ease, height 0.3s ease, background-color 0.3s ease, border-radius 0.3s ease, transform 0.1s linear,scale 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  transition-property: width, height, background-color, border-radius, margin;
+.hd {
+  animation: hjj 5s ease-in-out infinite;
 }
 
-.ipad-cursor.snap {
-  width: 45px;
-  height: 45px;
-  background-color: rgba(200, 200, 200, 0.4);
-  color: #ffffff00;
-  margin-left: -25px;
-  margin-top: -25px;
-  filter: none;
-  backdrop-filter: none;
-}
-
-.snap2 {
-  width: 0px;
-  height: 0px;
-  background-color: rgba(200, 200, 200, 0.2);
-  filter: blur(20px) !important;
-  transition: cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  backdrop-filter: none;
-}
-
-.hd{
-  animation: hjj  5s ease-in-out infinite;
-
-}
-
-.hdAr{
+.hdAr {
   -webkit-text-fill-color: transparent;
   -webkit-text-stroke: 1.7px; 
 }
-.hdMob{
+.hdMob {
   -webkit-text-fill-color: transparent;
   -webkit-text-stroke: 1.3px;
 }
-.hdMob1{
+.hdMob1 {
   -webkit-text-fill-color: transparent;
   -webkit-text-stroke: 0.7px;
 }
+
 @keyframes hjj {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
-}
-.clicking{
-   position: fixed;
-  top: 0;
-  left: 0;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  pointer-events: none;
-  z-index: 9999999999;
-  margin-left: -10px; 
-  margin-top: -10px;
-  transition: width 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275)  , height 0.1 cubic-bezier(0.175, 0.885, 0.32, 1.275) , background-color 0.3s ease, border-radius 0.3s ease, transform 0.1s linear,scale 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  transition-property: width, height, background-color, border-radius, margin;
-  
-}
-
-
-@keyframes fadeInBlur {
-    0% { opacity: 0; filter: blur(4px); }
-    100% { opacity: 1; filter: blur(0); }
-}
-.animate-fade-in-blur {
-    animation: fadeInBlur 0.3s ease-out forwards;
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
 .card {
   position: relative;
-  /* Example size and glass effect for context */
-  
 }
 
 .cards {
   content: "";
   position: absolute;
   inset: 0;
-
-  padding: 1px; /* This defines the Border Width specified (3px) */
-  
-  /* The Gradient Logic based on your image specs */
+  padding: 1px;
   background: linear-gradient(
     135deg, 
-    rgba(255, 255, 255, 0.2) 0%,   /* Point 1: White 50% */
-    rgba(255, 255, 255, 0) 35%,    /* Point 2: White 0% (Fade out) */
-    rgba(255, 72, 219, 0) 65%,     /* Point 3: Pink 0% (Fade in start) */
-    rgba(186, 186, 186, 0.2) 100%   /* Point 4: Pink 50% */
+    rgba(255, 255, 255, 0.2) 0%,   
+    rgba(255, 255, 255, 0) 35%,    
+    rgba(255, 72, 219, 0) 65%,     
+    rgba(186, 186, 186, 0.2) 100%   
   );
-  
-  /* The Mask Trick: excludes the center so only the border shows */
-  -webkit-mask: 
-     linear-gradient(#fff 0 0) content-box, 
-     linear-gradient(#fff 0 0);
-     
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
-  
-  /* Ensures clicks pass through the border to the card content */
   pointer-events: none; 
-
 }
+
 .logoCarousel {
   width: 200%;
   animation: logo-marquee 34s linear infinite;
 }
 
 @keyframes logo-marquee {
-  from {
-    transform: translateX(-100%);
-  }
-  to {
-    transform: translateX(0%);
-  }
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0%); }
 }
-;
 
 .safariBlur {
-    -webkit-filter: blur(4px);
-
+  -webkit-filter: blur(4px);
 }

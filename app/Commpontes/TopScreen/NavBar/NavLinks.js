@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { filter } from "framer-motion/client";
+import { blur } from "three/tsl";
 
 
 
@@ -14,8 +16,8 @@ export default function NavLinks({ mode1, language,navTexts }) {
 
   // Capsule variants — strictly transforms and opacity for zero reflow
   const capsuleVariants = {
-    visible: { opacity: 1, y: 0, scale: 1 },
-    hidden: { opacity: 0, y: -20, scale: 0.95 },
+    visible: { opacity: 1, y: 0, scaleY: 1 },
+    hidden: { opacity: 0, y: -40, scaleY:0.1 },
   };
 
   return (
@@ -41,9 +43,9 @@ export default function NavLinks({ mode1, language,navTexts }) {
               initial={false}
               transition={{
                 type: "spring",
-                stiffness: 400,
-                damping: 30,
-                delay: i * 0.04,
+               
+                delay: i * 0.1,
+                duration:0.21
               }}
             >
               {/* Magic Morph Pill using layoutId */}

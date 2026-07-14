@@ -11,8 +11,7 @@ import i18nData from '../../translations/homeCardsData';
 import { LiquidGlass } from '@liquidglass/react';
 import Monoco from '@monokai/monoco-react';
 
-// Import your 8 custom cards here. 
-// (Adjust the path if your cards are saved in a different folder)
+// Import your 8 custom cards here
 import { 
   Card1, Card2, Card3, Card4, Card5, Card6, Card7, Card8 
 } from './TheCards'; 
@@ -28,31 +27,21 @@ const BREAKPOINTS = {
   'sm':  { width: 340, height: 278, minGap: -100, maxGap: 25, speed: 0.8 },
   'base':{ width: 290, height: 237, minGap: -80, maxGap: 20, speed: 0.6 },
 };
+
 function useResponsiveRadius() {
-  // Default to 30 for mobile-first, or 60 if you prefer desktop-first SSR
   const [radius, setRadius] = useState(30); 
 
   useEffect(() => {
     const handleResize = () => {
       const width = window.innerWidth;
-
-      if (width < 640) {
-        setRadius(30); // Phones (Portrait)
-      } else if (width < 768) {
-        setRadius(40); // Phones (Landscape)
-      } else if (width < 1024) {
-        setRadius(45); // Mini iPads / Tablets
-      } else if (width < 1536) {
-        setRadius(50); // Laptops / Desktops
-      } else {
-        setRadius(60); // 2xl Screens and larger
-      }
+      if (width < 640) setRadius(30);
+      else if (width < 768) setRadius(40);
+      else if (width < 1024) setRadius(45);
+      else if (width < 1536) setRadius(50);
+      else setRadius(60);
     };
 
-    // Run once on mount to get initial size
     handleResize();
-
-    // Listen for window resize
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
@@ -69,7 +58,9 @@ const Card = React.memo(({
   scrollY, 
   config, 
   totalWidth,
-  item 
+  item,
+  onHoverStart,
+  onHoverEnd
 }) => {
   const { width, minGap, maxGap, height } = config;
   const radius = BASE_RADIUS;
@@ -107,12 +98,12 @@ const Card = React.memo(({
   });
 
   const dynamicRadius = useResponsiveRadius();
-
-  // Select the appropriate card component based on the index
   const ActiveCard = cardComponents[index % cardComponents.length];
 
   return (
     <motion.div
+      onMouseEnter={onHoverStart}
+      onMouseLeave={onHoverEnd}
       style={{
         x, y, rotate, 
         display,
@@ -125,11 +116,17 @@ const Card = React.memo(({
         height: `${height}px`,
         willChange: 'transform' 
       }}
-      className={`rounded-[20px] relative scale-90 sm:rounded-[25px] md:rounded-[30px] lg:rounded-[35px] 2xl:rounded-[40px] p-[5px] lg:p-[20px] overflow-visible`}
+      className="rounded-[20px] relative scale-90 sm:rounded-[25px] md:rounded-[30px] lg:rounded-[35px] 2xl:rounded-[40px] p-[5px] lg:p-[20px] overflow-visible"
     >
-      <Monoco borderRadius={dynamicRadius}  border={[2, '#84848472']} smoothing={1} clip={true} className=' p-[10px] w-full h-full absolute top-0 left-0  '></Monoco>
+      <Monoco 
+        borderRadius={dynamicRadius} 
+        border={[2, '#84848472']} 
+        smoothing={1} 
+        clip={true} 
+        className="p-[10px] w-full h-full absolute top-0 left-0 pointer-events-none"
+      />
 
-      <div className='w-full h-full rounded-[25px] shadow-xl  lg:rounded-[40px]  blured bg-lightGray/5 relative overflow-hidden'>
+      <div className="w-full h-full rounded-[25px] shadow-xl lg:rounded-[40px] blured bg-lightGray/5 relative overflow-hidden pointer-events-none">
         <LiquidGlass 
           borderRadius={0} 
           blur={0} 
@@ -140,8 +137,7 @@ const Card = React.memo(({
           shadowIntensity={0} 
           saturation={1.3}
         >
-          {/* The dynamic inner card is injected here */}
-          <div className="w-full h-full absolute inset-0">
+          <div className="w-full h-full absolute inset-0 pointer-events-none">
             <ActiveCard />
           </div>
         </LiquidGlass>
@@ -174,6 +170,13 @@ export default function ArchedCarousel() {
   const config = useMemo(() => BREAKPOINTS[breakpoint], [breakpoint]);
   
   const speedRef = useRef(config.speed);
+
+  // Interaction speed and physics state trackers
+  const currentSpeedMultiplier = useRef(1);
+  const targetSpeedMultiplier = useRef(1);
+  const isDragging = useRef(false);
+  const dragVelocity = useRef(0);
+  const [isCursorGrabbing, setIsCursorGrabbing] = useState(false);
 
   useEffect(() => {
     speedRef.current = config.speed;
@@ -224,20 +227,73 @@ export default function ArchedCarousel() {
     };
   }, [handleResize]);
 
+  // Framer Motion Deceleration & Physics Loop
   useAnimationFrame((t, delta) => {
     if (!isMounted) return;
     
-    const safeDelta = Math.min(delta, 100); 
-    const direction = langKey === 'ar' ? -1 : 1;
-    
-    const moveBy = (speedRef.current * direction) * (safeDelta / 16);
-    
-    baseX.set(baseX.get() + moveBy);
+    // Lerp multiplier for elegant deceleration transitions
+    currentSpeedMultiplier.current += (targetSpeedMultiplier.current - currentSpeedMultiplier.current) * 0.08;
+
+    if (isDragging.current) {
+      dragVelocity.current = 0; 
+    } else if (Math.abs(dragVelocity.current) > 0.01) {
+      baseX.set(baseX.get() + dragVelocity.current);
+      // Decay friction coefficient
+      dragVelocity.current *= 0.96; 
+    }
+
+    if (!isDragging.current) {
+      const safeDelta = Math.min(delta, 100); 
+      const direction = langKey === 'ar' ? -1 : 1;
+      const moveBy = (speedRef.current * direction) * currentSpeedMultiplier.current * (safeDelta / 16);
+      
+      baseX.set(baseX.get() + moveBy);
+    }
   });
+
+  // Smooth Pan Handlers
+  const handlePanStart = () => {
+    isDragging.current = true;
+    setIsCursorGrabbing(true);
+  };
+
+  const handlePan = (event, info) => {
+    baseX.set(baseX.get() + info.delta.x);
+  };
+
+  const handlePanEnd = (event, info) => {
+    isDragging.current = false;
+    setIsCursorGrabbing(false);
+    dragVelocity.current = info.velocity.x * 0.045; 
+  };
+
+  // Hover Callbacks wrapped to keep Card memoization perfectly stable
+  const handleCardHoverStart = useCallback(() => {
+    targetSpeedMultiplier.current = 0.08;
+  }, []);
+
+  const handleCardHoverEnd = useCallback(() => {
+    targetSpeedMultiplier.current = 1;
+  }, []);
 
   return (
     <div className="relative w-full min-h-[500px] md:min-h-[700px] lg:h-[300px] transition-colors duration-500"> 
-      <div className="sticky top-0 w-full h-screen flex justify-center items-start overflow-hidden pt-10 md:pt-20">
+      <motion.div 
+        initial={{ opacity: 0, y: 140, scale: 0.94 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{
+          type: 'spring',
+          stiffness: 50,
+          damping: 14,
+          mass: 1.1,
+          delay: 0.25
+        }}
+        onPanStart={handlePanStart}
+        onPan={handlePan}
+        onPanEnd={handlePanEnd}
+        style={{ cursor: isCursorGrabbing ? 'grabbing' : 'grab' }}
+        className="sticky top-0 w-full h-screen flex justify-center items-start overflow-hidden pt-10 md:pt-20 select-none touch-pan-y"
+      >
         <div className="absolute inset-0 pointer-events-none" />
         {isMounted && currentData.map((item, index) => (
           <Card 
@@ -248,9 +304,11 @@ export default function ArchedCarousel() {
             scrollY={scrollY}
             config={config}
             totalWidth={totalWidth}
+            onHoverStart={handleCardHoverStart}
+            onHoverEnd={handleCardHoverEnd}
           />
         ))}
-      </div>
+      </motion.div>
     </div>
   );
 }

@@ -12,6 +12,7 @@ import About from "./Commpontes/About/About";
 import IPadCursor from "./Commpontes/GlobalComponotes/IPadCursor";
 import Blobs from "./Commpontes/HomeView/Blobs";
 
+
 export default function Home() {
   const [mode1, setMode1] = useState(false);
   const [currentCapsule, setCurrentCapsule] = useState("");
@@ -103,7 +104,7 @@ export default function Home() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="gradient-blur z-[9999999998] -mt-2 rotate-180 bg-gradient-to-b from-transparent to-white dark:to-black/60"
+            className="gradient-blur z-[9999999998] pointer-events-none -mt-2 rotate-180 bg-gradient-to-b from-transparent to-white dark:to-black/60"
           >
             {Array.from({ length: 20 }).map((_, index) => (
               <motion.div
@@ -139,6 +140,8 @@ export default function Home() {
 
 
       <BtmScreen currentCapsule={currentCapsule} mode1={mode1} />
+      
+      
     </div>
   );
 }

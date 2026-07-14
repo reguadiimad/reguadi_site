@@ -18,7 +18,7 @@ export default function ActivityCapsule({currentCapsule}) {
     }, [language]);
 
     return (
-       <motion.div className="w-full scale-75 lg:scale-[0.8] xl:scale-100 origin-bottom relative flex items-center justify-center gap-2 h-24">
+       <motion.div className="w-full scale-75 lg:scale-[0.8] xl:scale-100 origin-bottom relative flex items-center pointer-events-none justify-center gap-2 h-24">
         <AnimatePresence  initial={false}>
             {currentCapsule === "sound" && <SoundCapsule key="sound" />}
             {currentCapsule === "theme" && <ThemeCapsule key="theme" />}
