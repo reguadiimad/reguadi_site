@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import TypeIt from 'typeit-react';
-import { motion, AnimatePresence, spring } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import CrystalToggle from './CrystalTogle';
 import BackendGearsDisplay from './CrystalGears';
 import Monoco from '@monokai/monoco-react';
@@ -56,7 +56,6 @@ const TypingAnimation = ({ onComplete }) => {
 
   const ThePhase2 = ({ outlined = false, opacityHd = true }) => (
   <motion.div
-   initial={{opacity:outlined?0:1}} animate={{opacity:1}} transition={{duration:outlined?0.6:0,delay:outlined?1.4:0}}
     className={`ease-in-out duration-150 font-bold font-NumFont text-center text-gray-900 dark:text-gray-100 ${
       !opacityHd && outlined && "opacity-0"
     } ${
@@ -113,10 +112,22 @@ const TypingAnimation = ({ onComplete }) => {
   };
 
   return (
-    <motion.div key={defaultLanguage} className={`flex flex-col items-center w-full px-4 h-auto ${isArabic ? 'font-arb' : ''}`}
-      dir={isArabic ? "rtl" : "ltr"} id="typing" 
+    <motion.div
+      key={defaultLanguage}
+      className={`flex flex-col items-center w-full px-4 h-auto ${isArabic ? 'font-arb' : ''}`}
+      layout
+      dir={isArabic ? "rtl" : "ltr"}
+      id="typing"
+      transition={springTransition}
     >
-      <motion.div  className={`flex z-10 flex-row items-end gap-2 sm:gap-3 md:gap-4 flex-wrap justify-center   h-10 sm:h-12 md:h-14   2xl:h-16  ${isArabic && "font-arb"}`}>
+      <motion.div
+        layout
+        transition={springTransition}
+
+        className={`flex z-10 flex-row items-end gap-2 sm:gap-3 md:gap-4 flex-wrap justify-center   h-10 sm:h-12 md:h-14   2xl:h-16  ${
+          isArabic && "font-arb"
+        }`}
+      >
         <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-nowrap text-gray-800 dark:text-gray-100">
           {phase === 0 ? (
            <TypeIt
@@ -165,7 +176,7 @@ const TypingAnimation = ({ onComplete }) => {
           )}
         </h1>
 
-
+        <AnimatePresence mode="popLayout">
           {phase >= 1 && (
             <Monoco
               borderRadius={13}
@@ -173,11 +184,17 @@ const TypingAnimation = ({ onComplete }) => {
               clip={true}
               className="relative z-10 shadow-lg text-white bg-blue-600 dark:bg-orange-500 px-2 py-1 text-[10px] md:text-sm lg:text-lg xl:text-xl font-satoshi -translate-y-1"
             >
-              <span className="font-bold w-full h-full" dir="ltr">
+              <motion.span
+                className="font-bold w-full h-full"
+                layout
+                dir="ltr"
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+              >
                 {phase === 1 ? (
                   <TypeIt
                     options={{
-                      lifeLike: true,
+                      lifeLike: false,
                       speed: 0,
                       html: true,
                       cursor: true,
@@ -205,10 +222,10 @@ const TypingAnimation = ({ onComplete }) => {
                 ) : (
                   <span>&lt;br/&gt;</span>
                 )}
-              </span>
+              </motion.span>
             </Monoco>
           )}
-
+        </AnimatePresence>
       </motion.div>
 
       {phase >= 2 && (
@@ -221,10 +238,7 @@ const TypingAnimation = ({ onComplete }) => {
           <ThePhase2 />
 
           <div className="w-full h-full z-10 absolute top-0 left-0 pointer-events-none">
-            <motion.h1   className={`${phase >= 3?"opacity-100":"opacity-0"} ease-in-out transition-opacity duration-500 font-bold  text-center text-gray-900 dark:text-gray-100
-             ${isArabic? "text-8xl -mr-[10%] sm:mr-0 sm:text-9xl  lg:text-[150px]  xl:text-[180px] my-5 sm:my-10 2xl:my-20 xl:scale-125 font-arb2 hdAr" : "hdMob dark:text-gray-100 text-[80px] leading-18 sm:leading-relaxed md:text-[6.784rem]  font-black lg:text-9xl xl:text-[150px] 2xl:scale-125 font-clashDisplay"}`}>
-              {currentText.name}
-            </motion.h1>
+            <ThePhase2 outlined={true} opacityHd={phase >= 3} />
           </div>
 
           <div
@@ -234,33 +248,20 @@ const TypingAnimation = ({ onComplete }) => {
                 : "md:w-full xl:w-[75%] sm:w-[90%] lg:w-[85%] w-full"
             } absolute pointer-events-none flex flex-col sm:flex-row items-center justify-center`}
           >
-            {/* --- 1. Crystal Toggle (Comes from Left) --- */}
-            <motion.div
-              initial={{ x: "-100vw", opacity: 0 }}
-              animate={
-                phase >= 3
-                  ? { x: 0, opacity: 1,scale:1}
-                  : { x: 0, opacity: 0,scale:0}
-              }
-              transition={{ duration: 2,type:"spring",delay:0.7,mass:1.1 }}
-              className="w-full h-[50%] sm:w-[50%] sm:h-full flex items-center"
+            <div
+              className={`w-full h-[50%] sm:w-[50%] sm:h-full flex items-center transition-opacity duration-300 ${
+                phase >= 3 ? "opacity-100" : "opacity-0"
+              }`}
             >
               <CrystalToggle />
-            </motion.div>
-
-            {/* --- 2. Backend Gears Display (Comes from Right with Delay) --- */}
-            <motion.div
-              initial={{ x: "100vw", opacity: 0 }}
-              animate={
-                phase >= 3
-                  ? { x: 0, opacity: 1 }
-                  : { x: "120vw", opacity: 0 }
-              }
-              transition={{ duration: 1.4,type:"spring",delay:1.5,mass:0.4}}
-              className="w-full h-[50%] sm:w-[50%] sm:h-full flex items-center"
+            </div>
+            <div
+              className={`w-full h-[50%] sm:w-[50%] sm:h-full flex items-center transition-opacity duration-300 ${
+                phase >= 3 ? "opacity-100" : "opacity-0"
+              }`}
             >
               <BackendGearsDisplay isArabic={isArabic} />
-            </motion.div>
+            </div>
           </div>
         </motion.div>
       )}

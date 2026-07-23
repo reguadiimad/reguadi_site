@@ -3,80 +3,119 @@
 import React, { useState, useRef, useEffect } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { motion} from 'framer-motion';
+import { motion } from 'framer-motion';
 import { TriggerCapsulle } from './Popup';
+import { useSelector } from 'react-redux';
 
 // Register ScrollTrigger for GPU-accelerated scroll interpolation
 gsap.registerPlugin(ScrollTrigger);
 
-const PLAYER_OPTICS = {
-  clipToShape: true,
-  softEdge: true,
-  strength: 0.6,
-  depth: 0.2,
-  curvature: 0.5,
-  bend: 0.1,
-  bendWidth: 0.1,
-  dispersion: 0.25,
-  specular: 0,
-  sheenAngle: 100,
-  glow: 1.6,
-  glowSpread: 1,
-  glowFalloff: 1,
-  sheen: 1,
-  sheenWidth: 0,
-  sheenFalloff: 1,
-  frost: 1.3,
-  brightness: 0,
-  thickness: 0,
+// Localized Content Dictionary for Eng, Fr, and Ar
+const SLIDES_CONTENT = {
+  Eng: [
+    {
+      id: "01",
+      metricValue: 99,
+      metricSuffix: "%",
+      metricLabel: "Interaction Fluidity",
+      quote1: "Design isn't just static layouts; it's how a digital product breathes. I engineer frontend architectures using React and Next.js where motion feels as native and weighted as physical objects.",
+      quote2: "Every complex UI interaction, GSAP timeline, and SVG morph is precision-crafted to eliminate friction, ensuring your brand delivers an undeniable, premium impression.",
+      author: "Imad Reguadi",
+      role: "Creative Full-Stack Developer & Designer",
+      avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&h=150&q=80",
+      tags: ["// Next.js Architecture", "// GSAP Interaction", "// Premium UI/UX"]
+    },
+    {
+      id: "02",
+      metricValue: 14,
+      metricSuffix: "ms",
+      metricLabel: "Edge Network Latency",
+      quote1: "A gorgeous interface demands an uncompromising, battle-hardened engine. I architect scalable backend systems, secure API layers, and relational structures that translate deep complexity into raw speed.",
+      quote2: "From integrating vector stores for modern AI pipelines to deploying microservices, every system layer is configured to handle high concurrency seamlessly.",
+      author: "Imad Reguadi",
+      role: "Creative Full-Stack Developer & Designer",
+      avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&h=150&q=80",
+      tags: ["// Scalable API Layers", "// Edge Infrastructure", "// Optimized Pipelines"]
+    }
+  ],
+  Fr: [
+    {
+      id: "01",
+      metricValue: 99,
+      metricSuffix: "%",
+      metricLabel: "Fluidité d'Interaction",
+      quote1: "Le design ne se limite pas à des mises en page statiques ; c'est la respiration d'un produit numérique. J'élabore des architectures frontend avec React et Next.js où le mouvement est aussi naturel et fluide que dans le monde réel.",
+      quote2: "Chaque interaction UI complexe, chronologie GSAP et métamorphose SVG est conçue avec précision pour éliminer les frictions, garantissant à votre marque une impression haut de gamme.",
+      author: "Imad Reguadi",
+      role: "Développeur Full-Stack Créatif & Designer",
+      avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&h=150&q=80",
+      tags: ["// Architecture Next.js", "// Interaction GSAP", "// UI/UX Haut de Gamme"]
+    },
+    {
+      id: "02",
+      metricValue: 14,
+      metricSuffix: "ms",
+      metricLabel: "Latence du Réseau Edge",
+      quote1: "Une interface somptueuse exige un moteur sans concession et éprouvé. J'architecture des systèmes backend évolutifs, des couches d'API sécurisées et des structures relationnelles qui convertissent la complexité en vitesse pure.",
+      quote2: "De l'intégration de bases vectorielles pour les pipelines d'IA modernes au déploiement de microservices, chaque couche est configurée pour gérer une forte concurrence.",
+      author: "Imad Reguadi",
+      role: "Développeur Full-Stack Créatif & Designer",
+      avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&h=150&q=80",
+      tags: ["// Couches API Évolutives", "// Infrastructure Edge", "// Pipelines Optimisés"]
+    }
+  ],
+  Ar: [
+    {
+      id: "01",
+      metricValue: 99,
+      metricSuffix: "%",
+      metricLabel: "سلاسة التفاعل",
+      quote1: "التصميم ليس مجرد تخطيطات ثابتة؛ بل هو الكيفية التي يتنفس بها المنتج الرقمي. أقوم بابتكار واجهات إلكترونية باستخدام React و Next.js حيث تكون الحركة طبيعية وملموسة كالأجسام الواقعية.",
+      quote2: "كل تفاعل معقد، وجدول زمني لـ GSAP، وتحول SVG مصنوع بدقة متناهية لتقليل الاحتكاك، مما يضمن تقديم انطباع استثنائي وفاخر لعلامتك التجارية.",
+      author: "عماد الروكادي",
+      role: "مطور شامل ومصمم خلاق",
+      avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&h=150&q=80",
+      tags: ["// معمارية Next.js", "// تفاعلات GSAP", "// واجهات مستخدم فاخرة"]
+    },
+    {
+      id: "02",
+      metricValue: 14,
+      metricSuffix: "مللي ثانية",
+      metricLabel: "زمن استجابة شبكة Edge",
+      quote1: "الواجهة الجذابة تتطلب محركًا قويًا لا يتقبل المساومة. أقوم بتصميم أنظمة خلفية قابلة للترقية، وطبقات واجهة برمجة تطبيقات آمنة تحول التعقيد إلى سرعة فائقة.",
+      quote2: "من دمج قواعد البيانات المتجهة لخطوط الذكاء الاصطناعي الحديثة إلى نشر الخدمات المصغرة، يتم إعداد كل طبقة للتعامل مع الأحمال العالية بنجاح.",
+      author: "عماد الروكادي",
+      role: "مطور شامل ومصمم خلاق",
+      avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&h=150&q=80",
+      tags: ["// واجهات برمجة واسعة", "// بنية تحتية سحابية", "// خطوط معالجة محسّنة"]
+    }
+  ]
 };
 
-const PLAYER_OPTICS2 = {
-  clipToShape: false,
-  softEdge: true,
-  strength: 0.7,
-  depth: 0.15,
-  curvature: 1,
-  bend: 0.3,
-  bendWidth: 0.1,
-  dispersion: 1,
-  specular: 0,
-  sheenAngle: 100,
-  glow: 1,
-  glowSpread: 1,
-  glowFalloff: 1,
-  sheen: 1,
-  sheenWidth: 0,
-  sheenFalloff: 1,
-  frost: 0.9,
-  brightness: 0,
-  thickness: 0,
-};
-
-const SLIDES_DATA = [
-  {
-    id: "01",
-    metricValue: 99,
-    metricSuffix: "%",
-    metricLabel: "Interaction Fluidity",
-    quote1: "Design isn't just static layouts; it's how a digital product breathes. I engineer frontend architectures using React and Next.js where motion feels as native and weighted as physical objects.",
-    quote2: "Every complex UI interaction, GSAP timeline, and SVG morph is precision-crafted to eliminate friction, ensuring your brand delivers an undeniable, premium impression.",
-    author: "Imad Reguadi",
-    role: "Creative Full-Stack Developer & Designer",
-    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&h=150&q=80"
+// Localized UI Labels
+const UI_LABELS = {
+  Eng: {
+    capability: "Capability",
+    clickPause: "Click Line to Pause",
+    clickPlay: "Click Line to Play",
+    pauseTimeline: "|| Pause Timeline",
+    playTimeline: "▶ Play Timeline"
   },
-  {
-    id: "02",
-    metricValue: 14,
-    metricSuffix: "ms",
-    metricLabel: "Edge Network Latency",
-    quote1: "A gorgeous interface demands an uncompromising, battle-hardened engine. I architect scalable backend systems, secure API layers, and relational structures that translate deep complexity into raw speed.",
-    quote2: "From integrating vector stores for modern AI pipelines to deploying microservices, every system layer is configured to handle high concurrency seamlessly.",
-    author: "Imad Reguadi",
-    role: "Creative Full-Stack Developer & Designer",
-    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&h=150&q=80"
+  Fr: {
+    capability: "Capacité",
+    clickPause: "Cliquer pour mettre en pause",
+    clickPlay: "Cliquer pour lire",
+    pauseTimeline: "|| Mettre en pause",
+    playTimeline: "▶ Lire l'animation"
+  },
+  Ar: {
+    capability: "الإمكانيات",
+    clickPause: "انقر للإيقاف المؤقت",
+    clickPlay: "انقر للتشغيل",
+    pauseTimeline: "|| إيقاف مؤقت",
+    playTimeline: "▶ تشغيل العرض"
   }
-];
+};
 
 const TRACK_REVEAL_CONFIG = {
   hidden: { opacity: 0, filter: "blur(10px)" },
@@ -91,11 +130,14 @@ const TRACK_REVEAL_CONFIG = {
   }
 };
 
-const SplitText = ({ text }) => {
+const SplitText = ({ text, isArabic }) => {
   return (
     <span className="inline-flex flex-wrap content-start row-gap-0">
       {text.split(' ').map((word, index) => (
-        <span key={index} className="inline-block overflow-hidden mr-[0.22em] py-1">
+        <span 
+          key={index} 
+          className={`inline-block overflow-hidden py-1 ${isArabic ? 'ml-[0.22em]' : 'mr-[0.22em]'}`}
+        >
           <span className="animate-word inline-block will-change-transform">
             {word}
           </span>
@@ -105,7 +147,7 @@ const SplitText = ({ text }) => {
   );
 };
 
-export default function FoundersSection() {
+export default function FoundersSection({ cleanSpace, setIsDocked, setShowWaves }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(true);
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -121,9 +163,30 @@ export default function FoundersSection() {
   const revealLayerRef = useRef(null);
   const capsuleRef = useRef(null); 
   const landingRef = useRef(null);
+  const progressBarRef = useRef(null); 
   
   const prevMetricRef = useRef(0);
   const timerTweenRef = useRef(null);
+
+  // Redux language selector
+  const language = useSelector((state) => state.language.indice);
+  const isArabic = language === "Ar";
+
+  // Dynamic font class names
+  const fontSatoshi = isArabic ? 'font-arb' : 'font-satoshi';
+  const fontClash = isArabic ? 'font-arb2' : 'font-clashDisplay';
+
+  // Fallbacks for data structures
+  const activeSlides = SLIDES_CONTENT[language] || SLIDES_CONTENT.Eng;
+  const labels = UI_LABELS[language] || UI_LABELS.Eng;
+  const currentSlide = activeSlides[activeIndex] || activeSlides[0];
+
+  useEffect(() => {
+    if (setIsDocked) {
+      const isFloating = isCapsuleVisible && !isCapsuleDocked;
+      setIsDocked(isFloating);
+    }
+  }, [isCapsuleVisible, isCapsuleDocked, setIsDocked]);
 
   // Dynamic Line-Aware Exit Timeline Controller
   const triggerExitAndChange = (nextIndex) => {
@@ -145,7 +208,6 @@ export default function FoundersSection() {
       if (revealWords[i]) pairedWords.push(revealWords[i]);
     }
 
-    // Dynamic line offset calculation for reverse transition
     const lineOffsets = [];
     baseWords.forEach(word => {
       const top = word.parentElement?.offsetTop || 0;
@@ -160,44 +222,48 @@ export default function FoundersSection() {
       }
     });
 
-    // Clean downward rolling slide-out
-    exitTl.to(pairedWords, {
-      yPercent: 105,
-      duration: 0.5,
-      ease: "power3.in",
-      stagger: (index) => {
-        const wordIdx = Math.floor(index / 2);
-        const currentWord = baseWords[wordIdx];
-        if (!currentWord) return 0;
+    if (pairedWords.length > 0) {
+      exitTl.to(pairedWords, {
+        yPercent: 105,
+        duration: 0.5,
+        ease: "power3.in",
+        stagger: (index) => {
+          const wordIdx = Math.floor(index / 2);
+          const currentWord = baseWords[wordIdx];
+          if (!currentWord) return 0;
 
-        const top = currentWord.parentElement?.offsetTop || 0;
-        const lineIdx = lineOffsets.indexOf(top);
-        
-        let wordInLineIdx = 0;
-        for (let i = 0; i < wordIdx; i++) {
-          if ((baseWords[i].parentElement?.offsetTop || 0) === top) {
-            wordInLineIdx++;
+          const top = currentWord.parentElement?.offsetTop || 0;
+          const lineIdx = lineOffsets.indexOf(top);
+          
+          let wordInLineIdx = 0;
+          for (let i = 0; i < wordIdx; i++) {
+            if ((baseWords[i].parentElement?.offsetTop || 0) === top) {
+              wordInLineIdx++;
+            }
           }
+          return (lineIdx * 0.05) + (wordInLineIdx * 0.004);
         }
-        return (lineIdx * 0.05) + (wordInLineIdx * 0.004);
-      }
-    }, 0);
+      }, 0);
+    }
 
-    exitTl.to([metricRef.current, footer], {
-      opacity: 0,
-      y: 15,
-      duration: 0.35,
-      ease: "power2.in"
-    }, 0);
+    const exitTargets = [metricRef.current, footer].filter(Boolean);
+    if (exitTargets.length > 0) {
+      exitTl.to(exitTargets, {
+        opacity: 0,
+        y: 15,
+        duration: 0.35,
+        ease: "power2.in"
+      }, 0);
+    }
   };
 
   const handleNext = () => {
-    const nextIdx = (activeIndex + 1) % SLIDES_DATA.length;
+    const nextIdx = (activeIndex + 1) % activeSlides.length;
     triggerExitAndChange(nextIdx);
   };
 
   const handlePrev = () => {
-    const nextIdx = (activeIndex - 1 + SLIDES_DATA.length) % SLIDES_DATA.length;
+    const nextIdx = (activeIndex - 1 + activeSlides.length) % activeSlides.length;
     triggerExitAndChange(nextIdx);
   };
 
@@ -238,28 +304,57 @@ export default function FoundersSection() {
         }
       });
 
+      // Manage Waves visibility state based on 80% viewport coverage
+      if (setShowWaves && mainWrapperRef.current) {
+        ScrollTrigger.create({
+          trigger: mainWrapperRef.current,
+          start: "top 20%", // Triggers when section covers ~80% of screen height
+          end: "bottom 20%",
+          onEnter: () => setShowWaves(false),
+          onLeaveBack: () => setShowWaves(true),
+          onLeave: () => setShowWaves(true),
+          onEnterBack: () => setShowWaves(false),
+        });
+      }
+
       if (textContainerRef.current && landingRef.current) {
+        // 1. Manage Capsule Visibility
         ScrollTrigger.create({
           trigger: textContainerRef.current,
-          start: "top 90%",                 
+          start: "top 90%",
+          end: "bottom top", 
           onEnter: () => setIsCapsuleVisible(true),
-          onLeaveBack: () => setIsCapsuleVisible(false)
+          onLeave: () => {
+            setIsCapsuleVisible(true);
+          },
+          onEnterBack: () => setIsCapsuleVisible(true),
+          onLeaveBack: () => {
+            setIsCapsuleVisible(false);
+            setIsCapsuleDocked(false);
+          }
         });
 
+        // 2. Manage Capsule Docking State
         ScrollTrigger.create({
           trigger: landingRef.current,
           start: "top bottom-=96", 
+          end: "bottom top",
           onEnter: () => setIsCapsuleDocked(true),
-          onLeaveBack: () => setIsCapsuleDocked(false)
+          onLeave: () => {
+            setIsCapsuleDocked(true);
+          },
+          onEnterBack: () => setIsCapsuleDocked(true),
+          onLeaveBack: () => {
+            setIsCapsuleDocked(false);
+          }
         });
       }
     }, mainWrapperRef);
 
     return () => ctx.revert();
-  }, []);
+  }, [setShowWaves]);
 
   useEffect(() => {
-    const currentSlide = SLIDES_DATA[activeIndex];
     const startVal = prevMetricRef.current;
     const endVal = currentSlide.metricValue;
 
@@ -277,10 +372,12 @@ export default function FoundersSection() {
       const footer = textContainerRef.current?.querySelector('.animate-footer');
       const tl = gsap.timeline();
 
-      tl.fromTo(metricRef.current, 
-        { opacity: 0, y: 35, scale: 0.97 },
-        { opacity: 1, y: 0, scale: 1, duration: 0.85, ease: "back.out(1.5)" }
-      );
+      if (metricRef.current) {
+        tl.fromTo(metricRef.current, 
+          { opacity: 0, y: 35, scale: 0.97 },
+          { opacity: 1, y: 0, scale: 1, duration: 0.85, ease: "back.out(1.5)" }
+        );
+      }
 
       const counterTarget = { value: startVal };
       tl.to(counterTarget, {
@@ -297,7 +394,6 @@ export default function FoundersSection() {
         }
       }, "-=0.75");
 
-      // Dynamic Line-Aware Entry Stagger Calculation
       const lineOffsets = [];
       baseWords.forEach(word => {
         const top = word.parentElement?.offsetTop || 0;
@@ -305,31 +401,33 @@ export default function FoundersSection() {
       });
       lineOffsets.sort((a, b) => a - b);
 
-      tl.fromTo(pairedWords,
-        { yPercent: 105 },
-        { 
-          yPercent: 0, 
-          duration: 0.95, 
-          ease: "power4.out",
-          stagger: (index) => {
-            const wordIdx = Math.floor(index / 2);
-            const currentWord = baseWords[wordIdx];
-            if (!currentWord) return 0;
+      if (pairedWords.length > 0) {
+        tl.fromTo(pairedWords,
+          { yPercent: 105 },
+          { 
+            yPercent: 0, 
+            duration: 0.95, 
+            ease: "power4.out",
+            stagger: (index) => {
+              const wordIdx = Math.floor(index / 2);
+              const currentWord = baseWords[wordIdx];
+              if (!currentWord) return 0;
 
-            const top = currentWord.parentElement?.offsetTop || 0;
-            const lineIdx = lineOffsets.indexOf(top);
-            
-            let wordInLineIdx = 0;
-            for (let i = 0; i < wordIdx; i++) {
-              if ((baseWords[i].parentElement?.offsetTop || 0) === top) {
-                wordInLineIdx++;
+              const top = currentWord.parentElement?.offsetTop || 0;
+              const lineIdx = lineOffsets.indexOf(top);
+              
+              let wordInLineIdx = 0;
+              for (let i = 0; i < wordIdx; i++) {
+                if ((baseWords[i].parentElement?.offsetTop || 0) === top) {
+                  wordInLineIdx++;
+                }
               }
+              return (lineIdx * 0.0) + (wordInLineIdx * 0.006);
             }
-            return (lineIdx * 0.0) + (wordInLineIdx * 0.006);
-          }
-        },
-        "-=0.9"
-      );
+          },
+          "-=0.9"
+        );
+      }
 
       if (footer) {
         tl.fromTo(footer,
@@ -340,10 +438,11 @@ export default function FoundersSection() {
       }
 
       const progressObj = { value: 0 };
+      const transformOrigin = isArabic ? "right center" : "left center";
+      const exitTransformOrigin = isArabic ? "left center" : "right center";
       
-      const initialBars = mainWrapperRef.current?.querySelectorAll('.js-progress-bar');
-      if (initialBars) {
-        gsap.set(initialBars, { scaleX: 0, transformOrigin: "left center" });
+      if (progressBarRef.current) {
+        gsap.set(progressBarRef.current, { scaleX: 0, transformOrigin });
       }
 
       timerTweenRef.current = gsap.to(progressObj, {
@@ -351,16 +450,14 @@ export default function FoundersSection() {
         duration: 12,
         ease: "none",
         onUpdate: () => {
-          const activeBars = mainWrapperRef.current?.querySelectorAll('.js-progress-bar');
-          if (activeBars) {
-            gsap.set(activeBars, { scaleX: progressObj.value, transformOrigin: "left center" });
+          if (progressBarRef.current) {
+            gsap.set(progressBarRef.current, { scaleX: progressObj.value, transformOrigin });
           }
         },
         onComplete: () => {
-          const finalBars = mainWrapperRef.current?.querySelectorAll('.js-progress-bar');
-          if (finalBars) {
-            gsap.to(finalBars, {
-              transformOrigin: "right center",
+          if (progressBarRef.current) {
+            gsap.to(progressBarRef.current, {
+              transformOrigin: exitTransformOrigin,
               scaleX: 0,
               duration: 0.4,
               ease: "power3.inOut",
@@ -380,40 +477,41 @@ export default function FoundersSection() {
     }, mainWrapperRef);
 
     return () => ctx.revert(); 
-  }, [activeIndex]);
-
-  const currentSlide = SLIDES_DATA[activeIndex];
+  }, [activeIndex, language]);
 
   return (
-    <div ref={mainWrapperRef} className="relative w-full">
+    <div 
+      ref={mainWrapperRef} 
+      dir={isArabic ? 'rtl' : 'ltr'}
+      className="relative w-full bg-gradient-to-b from-[#e8eaec00] to-lightwhite dark:from-[#10101000] dark:to-[#101010] to-30%"
+    >
       <section 
         ref={containerRef}
-        className="min-h-screen bg-gradient-to-b from-black/0 to-[#101010] to-30% text-white flex items-center justify-center p-6 sm:p-12 md:p-20 font-sans -mt-64 selection:bg-white selection:text-black tracking-tight relative overflow-hidden"
+        className="min-h-screen text-gray-900 dark:text-white flex items-center justify-center p-6 sm:p-12 md:p-20 font-sans -mt-64 tracking-tight relative overflow-hidden"
       >
         <div className="absolute inset-0 bg-[radial-gradient(#ffffff07_1px,transparent_1px)] [background-size:24px_24px] pointer-events-none opacity-60" />
 
         <div className="w-full grid grid-cols-1 pt-64 lg:grid-cols-12 gap-12 lg:gap-16 items-start relative z-10">
           
-          <div className="lg:col-span-4  flex flex-row justify-between lg:flex-col  h-full pt-4 lg:min-h-[320px]">
-            <div className="space-y-3 font-satoshi ">
-              <div className="text-[10px] font-mono uppercase tracking-[0.3em] text-neutral-500">
-                Capability // 0{activeIndex + 1}
+          <div className="lg:col-span-4 flex flex-row justify-between lg:flex-col h-full pt-4 lg:min-h-[320px]">
+            <div className={`space-y-3 ${fontSatoshi}`}>
+              <div className="text-[8px] lg:text-[10px] font-mono uppercase tracking-[0.3em] text-neutral-500">
+                {labels.capability} // 0{activeIndex + 1}
               </div>
               
-              <div className="flex flex-col gap-1 pt-2 text-[11px] font-mono text-neutral-400">
-                {(activeIndex === 0 
-                  ? ["// Next.js Architecture", "// GSAP Interaction", "// Premium UI/UX"] 
-                  : ["// Scalable API Layers", "// Edge Infrastructure", "// Optimized Pipelines"]
-                ).map((tag) => (
+              <div className="flex flex-col gap-1 pt-2 text-[9px] lg:text-[11px] font-mono text-neutral-600 dark:text-neutral-400">
+                {currentSlide.tags.map((tag) => (
                   <span key={tag} className="tracking-wide">{tag}</span>
                 ))}
               </div>
             </div>
 
-            <div ref={metricRef} className=" lg:mt-auto">
-              <h2 className="text-6xl font-semibold  text-white tracking-tighter tabular-nums font-clashDisplay">
+            <div ref={metricRef} className="lg:mt-auto">
+              <h2 className={`text-6xl font-semibold text-gray-900 dark:text-white tracking-tighter tabular-nums ${fontClash}`}>
                 <span ref={counterRef}>{currentSlide.metricValue}</span>
-                <span className="text-neutral-500 font-light ml-0.5">{currentSlide.metricSuffix}</span>
+                <span className={`text-neutral-500 font-light ${isArabic ? 'mr-1' : 'ml-0.5'}`}>
+                  {currentSlide.metricSuffix}
+                </span>
               </h2>
               <span className="block mt-1.5 text-[9px] font-mono uppercase tracking-[0.2em] text-neutral-500">
                 {currentSlide.metricLabel}
@@ -421,30 +519,30 @@ export default function FoundersSection() {
             </div>
           </div>
 
-          <div ref={textContainerRef} className="lg:col-span-8 flex flex-col space-y-12 lg:space-y-14 font-satoshi relative">
+          <div ref={textContainerRef} className={`lg:col-span-8 flex flex-col space-y-12 lg:space-y-14 ${fontSatoshi} relative`}>
             
-            <div className="base-layer space-y-12 lg:space-y-14 text-neutral-700/80 select-none pointer-events-none transition-colors duration-300">
-              <h1 className="text-2xl sm:text-4xl md:text-[2.75rem] lg:text-5xl font-bold leading-[1.2] lg:pr-16 tracking-tight">
-                <SplitText text={currentSlide.quote1} />
+            <div className="base-layer space-y-12 lg:space-y-14 text-neutral-300 dark:text-neutral-700/80 select-none pointer-events-none transition-colors duration-300">
+              <h1 className={`text-2xl sm:text-4xl md:text-[2.75rem] lg:text-4xl xl:text-5xl font-bold leading-[1.2] tracking-tight ${isArabic ? 'lg:pl-16' : 'lg:pr-16'}`}>
+                <SplitText text={currentSlide.quote1} isArabic={isArabic} />
               </h1>
-              <p className="text-2xl sm:text-4xl md:text-[2.75rem] lg:text-[45px] font-bold leading-[1.2] tracking-tight">
-                <SplitText text={currentSlide.quote2} />
+              <p className="text-2xl sm:text-4xl md:text-[2.75rem] lg:text-4xl xl:text-5xl font-bold leading-[1.2] tracking-tight">
+                <SplitText text={currentSlide.quote2} isArabic={isArabic} />
               </p>
             </div>
 
             <div 
               ref={revealLayerRef} 
-              className="reveal-layer space-y-12 lg:space-y-14 text-white absolute top-0 left-0 w-full h-full pointer-events-none select-none will-change-transform"
+              className="reveal-layer space-y-12 lg:space-y-14 text-black dark:text-white absolute top-0 left-0 w-full h-full pointer-events-none select-none will-change-transform"
               style={{
                 maskImage: 'linear-gradient(135deg, #000 -40%, transparent -12%)',
                 WebkitMaskImage: 'linear-gradient(135deg, #000 -40%, transparent -12%)'
               }}
             >
-              <h1 className="text-2xl sm:text-4xl md:text-[2.75rem] lg:text-5xl font-bold leading-[1.2] lg:pr-16 tracking-tight">
-                <SplitText text={currentSlide.quote1} />
+              <h1 className={`text-2xl sm:text-4xl md:text-[2.75rem] lg:text-4xl xl:text-5xl font-bold leading-[1.2] tracking-tight ${isArabic ? 'lg:pl-16' : 'lg:pr-16'}`}>
+                <SplitText text={currentSlide.quote1} isArabic={isArabic} />
               </h1>
-              <p className="text-2xl sm:text-4xl md:text-[2.75rem] lg:text-[45px] font-bold leading-[1.2] tracking-tight">
-                <SplitText text={currentSlide.quote2} />
+              <p className="text-2xl sm:text-4xl md:text-[2.75rem] lg:text-4xl xl:text-5xl font-bold leading-[1.2] tracking-tight">
+                <SplitText text={currentSlide.quote2} isArabic={isArabic} />
               </p>
             </div>
 
@@ -457,8 +555,8 @@ export default function FoundersSection() {
                 />
               </div>
               <div className="flex flex-col text-[13px] leading-tight">
-                <span className="text-neutral-300 font-medium">{currentSlide.author}</span>
-                <span className="text-neutral-500 font-clashDisplay font-normal">{currentSlide.role}</span>
+                <span className="text-neutral-700 dark:text-neutral-300 font-medium">{currentSlide.author}</span>
+                <span className={`text-neutral-500 ${fontClash} font-normal`}>{currentSlide.role}</span>
               </div>
             </div>
 
@@ -467,7 +565,7 @@ export default function FoundersSection() {
         </div>
       </section>
 
-      <div ref={landingRef} className="w-full h-24 flex items-center justify-center relative bg-[#101010] p-10 ">
+      <div ref={landingRef} className="w-full h-24 flex items-center justify-center relative capabilities-bridge dark:bg-[#101010] p-10">
         <TriggerCapsulle 
           innerRef={capsuleRef}
           handleNext={handleNext} 
@@ -476,24 +574,28 @@ export default function FoundersSection() {
           onTogglePlayPause={togglePlayPause}
           isCapsuleVisible={isCapsuleVisible}
           isCapsuleDocked={isCapsuleDocked}
+          cleanSpace={cleanSpace}
+          setIsDocked={setIsDocked}
+          isArabic={isArabic}
         >
           <div 
             onClick={togglePlayPause}
-            className="w-full h-full flex flex-col justify-center px-6 cursor-pointer group/line select-none relative hover:pb-2 transform transition-all duration-300 ease-out z-20"
-            title={isPlaying ? "Click Line to Pause" : "Click Line to Play"}
+            className="w-full h-full flex flex-col justify-center px-4 lg:px-6 cursor-pointer group/line select-none relative hover:pb-2 transform transition-all duration-300 ease-out z-20"
+            title={isPlaying ? labels.clickPause : labels.clickPlay}
           >
             <motion.div 
               variants={TRACK_REVEAL_CONFIG}
-              className="w-full h-[4px] rounded-full bg-neutral-800 relative overflow-hidden transition-all duration-300 ease-out group-hover/line:h-[6px] group-hover/line:bg-neutral-700 will-change-[filter,opacity]"
+              className="w-full h-[8px] lg:h-[12px] rounded-full bg-[#87878a] dark:bg-darGray relative overflow-hidden transition-all duration-300 ease-out group-hover/line:h-[6px] group-hover/line:bg-neutral-300 dark:group-hover/line:bg-neutral-700 will-change-[filter,opacity]"
             >
               <div 
-                className="js-progress-bar h-full rounded-full bg-neutral-300 w-full transition-colors duration-300 group-hover/line:bg-white"
+                ref={progressBarRef} 
+                className="js-progress-bar h-full rounded-full bg-neutral-700 dark:bg-neutral-300 w-full transition-colors duration-300 group-hover/line:bg-black dark:group-hover/line:bg-white"
                 style={{ transform: "scaleX(0)" }}
               />
             </motion.div>
             
-            <span className="absolute bottom-3 left-6 text-[8px] font-mono uppercase tracking-widest text-neutral-600 opacity-0 transform translate-y-1 transition-all duration-300 ease-out group-hover/line:opacity-100 group-hover/line:translate-y-0">
-              {isPlaying ? "|| Pause Timeline" : "▶ Play Timeline"}
+            <span className={`absolute bottom-3 ${isArabic ? 'right-6' : 'left-6'} text-[8px] uppercase tracking-widest text-black/60 dark:text-white/60 opacity-0 transform translate-y-1 transition-all duration-300 ease-out group-hover/line:opacity-100 group-hover/line:translate-y-0`}>
+              {isPlaying ? labels.pauseTimeline : labels.playTimeline}
             </span>
           </div>
         </TriggerCapsulle>
@@ -501,4 +603,3 @@ export default function FoundersSection() {
     </div>
   );
 }
-

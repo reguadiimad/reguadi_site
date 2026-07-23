@@ -277,7 +277,7 @@ export default function ArchedCarousel() {
   }, []);
 
   return (
-    <div className="relative w-full min-h-[500px] md:min-h-[700px] lg:h-[300px] transition-colors duration-500"> 
+    <div className="relative w-full  -mt-[22%] sm:-mt-[13%] md:-mt-0  h-[450px] md:mb-20 lg:mb-0 lg:-mt-[3%]  lg:h-[600px] xl:h-[650px] 2xl:h-[750px] transition-colors duration-500"> 
       <motion.div 
         initial={{ opacity: 0, y: 140, scale: 0.94 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}

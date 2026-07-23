@@ -6,7 +6,7 @@ import { useSelector } from "react-redux";
 import GlassLogo from "./GalssLogo";
 import NavLinks from "./NavLinks";
 import TriggersActionCapsule from "./TrigiresCapsule";
-import {AnimatePresence, motion } from "framer-motion";
+import {AnimatePresence, delay, motion } from "framer-motion";
 import Monoco from "@monokai/monoco-react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEllipsisH } from "@fortawesome/free-solid-svg-icons";
@@ -28,7 +28,7 @@ export default function NavBar({ mode1, toggleMode }) {
 };
 
   return (
-    <div className={`w-[96%] pl-2 md:pl-0 lg:w-[80%] xl:w-[72%] transition-colors ease-in-out duration-300 rounded-4xl py-5 lg:mt-9 flex items-center fixed top-0 z-[999999998] text-sm md:text-lg xl:text-xl ${isArabic && "flex-row-reverse font-arb"}`}>
+    <div className={`w-[96%] pl-2 md:pl-0 lg:w-[80%] xl:w-[72%] transition-colors ease-in-out duration-300  rounded-4xl py-5 lg:mt-9 flex items-center fixed top-0 z-[999999998] text-sm md:text-lg xl:text-xl ${isArabic && "flex-row-reverse font-arb"}`}>
       <div className={`w-[14%] md:w-[12%] z-[100000] ${isArabic ? "flex flex-row-reverse" : ""}`}>
         <GlassLogo isArabic={isArabic} isDark={isDark} className="w-14 md:w-16 lg:w-[72px]"/>
       </div>
@@ -46,18 +46,18 @@ export default function NavBar({ mode1, toggleMode }) {
         </defs>
       </svg>
 
-      <motion.div  initial={false} className={`flex  h-14 items-stretch ${isArabic && "flex-row-reverse"}`} style={{ filter: "url(#goo-nav)", direction: isArabic ? "rtl" : "ltr" }}>
+      <motion.div  initial={false} className={`flex  h-14   ${isArabic && "flex-row-reverse gap-5"}`} style={{ filter: "url(#goo-nav)"}}>
 
-        <motion.div initial={false} animate={{ marginRight: !mode1 ? '12px' : '-160px' ,opacity: !mode1 ? 1 : 0 ,width:mode1?"100px":"auto"}} transition={{delay:!mode1&&0.25,type:"spring",mass:1.1,width:{duration:mode1?0.2:0,ease:"circInOut"}}}>
-          <TriggersActionCapsule mode1={mode1} />
+        <motion.div className={`${isArabic&&""}`} initial={false} animate={{ x:mode1?(isArabic?-50:50):0, marginRight: !mode1 ? '14px' : '-160px' ,opacity: !mode1 ? 1 : 0 ,width:mode1?"100px":"auto"}} transition={{delay:!mode1&&0.25,type:"spring",mass:1.15,opacity:{delay:!mode1?0.3:0},width:{duration:mode1?0.2:0,ease:"circInOut"}}}>
+          <TriggersActionCapsule mode1={mode1} isArabic={isArabic} />
         </motion.div>
 
         <ContactBtn mode1={mode1} toggleMode={toggleMode} isArabic={isArabic} />
 
         <motion.div  initial={false}
-        animate={{marginLeft:mode1?'20px':'-57px',scale:mode1?1:0,x:mode1?0:-55,color:mode1?'':'#ffffff00'}}
+        animate={{marginLeft:mode1?'20px':'-57px',scale:mode1?1:0.4,x:mode1?0:(isArabic?55:-55), opacity: mode1 ? 1 : 0,}}
         transition={{marginLeft:{type:"spring",mass:mode1?1.2:1.5,delay:mode1&&0.25},x:{duration:mode1?0.5:1.5,delay:mode1&&0.25},scale:{duration:mode1?0.05:0.8,delay:mode1?0.35:1.05}}}
-        className="bg-black  dark:bg-white text-white  dark:text-black hidden lg:flex items-center justify-center px-4 rounded-full">
+        className="bg-black text-white dark:bg-white dark:text-black hidden lg:flex items-center justify-center px-4 rounded-full">
           <FontAwesomeIcon icon={faEllipsisH} />
         </motion.div>
 

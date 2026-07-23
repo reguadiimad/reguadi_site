@@ -14,14 +14,14 @@ export default function AnimatedWelcome({ onAnimationComplete}) {
     useEffect(() => {
         const step1Timer = setTimeout(() => setAnimationStep(1), 100);
         const step2Timer = setTimeout(() => setAnimationStep(2), 100 + 700);
-        const completeTimer = setTimeout(() => onAnimationComplete && onAnimationComplete(), 2800); 
+        const completeTimer = setTimeout(() => onAnimationComplete && onAnimationComplete(), 1400); 
         return () => { clearTimeout(step1Timer);clearTimeout(step2Timer);clearTimeout(completeTimer);};
     }, [onAnimationComplete]);
 
 
     const containerVariants = {
         hidden: { opacity: 0, y: 32, scale: 0.9 },
-        visible: { opacity: 1, y: 0, scale: 1, transition: { type: "spring", damping: 15, stiffness: 200 } }
+        visible: { opacity: 1, y: 0, scale: 1, }
     };
 
     const textVariants = {
@@ -38,10 +38,10 @@ export default function AnimatedWelcome({ onAnimationComplete}) {
         <>
 
 
-          <Monoco borderRadius={19}
+          <Monoco borderRadius={17}
             smoothing={1}
-            clip={true} >
-              <motion.div className={` blured backdrop-blur-[2px] font-satoshi  flex items-center justify-center overflow-hidden whitespace-nowrap bg-lightGray/50 dark:bg-gray-500/40 text-darGray dark:text-lightGray font-semibold ${containerClasses}`}layout transition={{ type: "spring", damping: 25, stiffness: 300 }} variants={containerVariants} initial="hidden" animate={animationStep >= 1 ? "visible" : "hidden"} dir={textDirection}>
+            clip={true} className='backdrop-blur-xs' >
+              <motion.div  className={` blured2 backdrop-blur-[10px] font-satoshi  flex items-center justify-center overflow-hidden whitespace-nowrap bg-lightGray/50 dark:bg-gray-500/40 text-darGray dark:text-lightGray font-semibold ${containerClasses}`}layout transition={{ type: "spring",mass:0.7 }} variants={containerVariants} initial="hidden" animate={animationStep >= 1 ? "visible" : "hidden"} dir={textDirection}>
                 <motion.div className={` text-xs md:text-base ${fontClass} ${isArabic ? 'text-right' : 'text-left'}`} variants={textVariants} initial="hidden" animate={animationStep === 2 ? "visible" : "hidden"}>
                     {fullText}
                 </motion.div>

@@ -16,7 +16,7 @@ import SoundWaveIcon from "../SoundWave";
 
 
 
-export default function TriggersActionCapsule({ mode1 }) {
+export default function TriggersActionCapsule({ mode1,isArabic }) {
   const languages = [
     { indice: "Eng", value: "English" },
     { indice: "Ar", value: "العربية" },
@@ -58,7 +58,7 @@ export default function TriggersActionCapsule({ mode1 }) {
   useEffect(() => {
     if (isThemeChanged) dispatch(setThemeIsChanged(false));
   }, [isSoundModeChanged, isThemeChanged, dispatch]);
-  const isArabic = language.indice === "Ar";
+
 
   // ── Render ────────────────────────────────────────────────────────────────
   return (
@@ -67,7 +67,7 @@ export default function TriggersActionCapsule({ mode1 }) {
       style={{ pointerEvents: mode1 ? "none" : "auto", willChange: "opacity" }}
       className={`hidden lg:flex hover:scale-[1.015] h-full items-center justify-center  bg-lightGray dark:bg-darGray px-1.5 py-0 lg:px-1 lg:pl-[5.5px] gap-2 lg:gap-1 xl:gap-2 rounded-4xl border dark:border-[2.5px] border-black/20 shadow-2xs dark:border-white/30  ${isArabic?"ml-1.5":"mr-1.5"} `}>
       <motion.div>
-        <LanguageToggle languages={languages} setSelectedLang={setSelectedLang} language={language} />
+        <LanguageToggle isArabic={isArabic} languages={languages} setSelectedLang={setSelectedLang} language={language} />
       </motion.div>
       {/* ── Sound ── */}
       <motion.div>
@@ -147,7 +147,7 @@ const itemVariants = {
   })
 };
 
-const LanguageToggle = ({ languages, setSelectedLang, language }) => {
+const LanguageToggle = ({ languages, setSelectedLang, language,isArabic }) => {
   const [showDropDownLang, setShowDropDownLang] = useState(false);
 
   return (
@@ -156,7 +156,7 @@ const LanguageToggle = ({ languages, setSelectedLang, language }) => {
       // Click on the outer container toggles the menu
       onClick={() => setShowDropDownLang((v) => !v)}
     >
-      <div className="font-bold clickableMenu cursor-pointer text-center px-3 py-1 rounded-4xl bg-lightGray hover:bg-darGray/30 dark:bg-darGray dark:hover:bg-lightGray/50 dark:text-lightGray text-darGray flex items-center justify-center transition-all duration-100">
+      <div  className={`font-bold clickableMenu  cursor-pointer text-center px-3 py-1 rounded-4xl bg-lightGray hover:bg-darGray/30 dark:bg-darGray dark:hover:bg-lightGray/50 dark:text-lightGray text-darGray flex items-center justify-center transition-all duration-100`}>
         <span>{language.indice}</span>
         <FontAwesomeIcon
           icon={faCaretDown}

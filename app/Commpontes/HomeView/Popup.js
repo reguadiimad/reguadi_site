@@ -5,28 +5,31 @@ import gsap from 'gsap';
 import { motion, AnimatePresence } from 'framer-motion';
 import Monoco from '@monokai/monoco-react';
 import { Glass } from '@samasante/liquid-glass';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faLeftLong, faRightLong } from '@fortawesome/free-solid-svg-icons';
 
 const PLAYER_OPTICS = {
-  clipToShape: true,
+  clipToShape: false,
   softEdge: true,
   strength: 0.6,
-  depth: 0.2,
-  curvature: 0.5,
-  bend: 0.1,
-  bendWidth: 0.1,
+  depth: 0.15,
+  curvature: 1,
+  bend: 0.3,
+  bendWidth: 0.2,
   dispersion: 0.25,
   specular: 0,
   sheenAngle: 100,
-  glow: 1.6,
+  glow: 1,
   glowSpread: 1,
   glowFalloff: 1,
   sheen: 1,
   sheenWidth: 0,
   sheenFalloff: 1,
-  frost: 1.3,
+  frost: 0.9,
   brightness: 0,
   thickness: 0,
 };
+
 
 const PLAYER_OPTICS2 = {
   clipToShape: false,
@@ -50,9 +53,14 @@ const PLAYER_OPTICS2 = {
   thickness: 0,
 };
 
-export function TriggerCapsulle({ children, handleNext, handlePrev, innerRef, isCapsuleVisible, isCapsuleDocked }) {
-  const [widths, setWidths] = useState({ left: '25%', right: '8%' });
-  
+export function TriggerCapsulle({ children, handleNext, handlePrev, innerRef, isCapsuleVisible, isCapsuleDocked,cleanSpace,isArabic }) {
+  const defaultWidths = { left: '25%', right: '8%', rouneded: 12 };
+  const [widths, setWidths] = useState(defaultWidths);
+  const safeWidths = {
+    left: widths?.left ?? defaultWidths.left,
+    right: widths?.right ?? defaultWidths.right,
+    rouneded: widths?.rouneded ?? defaultWidths.rouneded,
+  };
 
   const leftTrackRef = useRef(null);
   const rightTrackRef = useRef(null);
@@ -61,17 +69,17 @@ export function TriggerCapsulle({ children, handleNext, handlePrev, innerRef, is
     const handleResize = () => {
       const w = window.innerWidth;
       if (w < 640) {          
-        setWidths({ left: '50%', right: '16%' });
+        setWidths({ left: '40%', right: '20%',rouneded:18 });
       } else if (w < 768) {   
-        setWidths({ left: '60%', right: '18%' });
+        setWidths({ left: '60%', right: '18%',rouneded:20 });
       } else if (w < 1024) {  
-        setWidths({ left: '48%', right: '14%' });
+        setWidths({ left: '48%', right: '14%',rouneded:24 });
       } else if (w < 1280) {  
-        setWidths({ left: '38%', right: '11%' });
+        setWidths({ left: '38%', right: '11%',rouneded:28 });
       } else if (w < 1536) {  
-        setWidths({ left: '32%', right: '9%' });
+        setWidths({ left: '28%', right: '9%',rouneded:30 });
       } else {                
-        setWidths({ left: '25%', right: '8%' });
+        setWidths({ left: '20%', right: '8%',rouneded:33 });
       }
     };
 
@@ -136,6 +144,8 @@ export function TriggerCapsulle({ children, handleNext, handlePrev, innerRef, is
     }
   };
 
+
+
   const leftPhysics = {
     hidden: { 
       y: 240,
@@ -150,7 +160,7 @@ export function TriggerCapsulle({ children, handleNext, handlePrev, innerRef, is
       scaleX: 1,
       scaleY: 1,
       opacity: 1,
-      width: custom.left, 
+      width: custom?.left ?? defaultWidths.left, 
       x: 0,                 
       transition: {
         y: { type: 'spring', stiffness: 175, damping: 17, mass: 1.05 },
@@ -191,7 +201,7 @@ export function TriggerCapsulle({ children, handleNext, handlePrev, innerRef, is
       scaleX: 1,
       scaleY: 1,
       opacity: 1,
-      width: custom.right, 
+      width: custom?.right ?? defaultWidths.right, 
       x: 0, 
       transition: {
         y: { type: 'spring', stiffness: 170, damping: 17, mass: 1.05, delay: 0.12 },
@@ -234,121 +244,138 @@ export function TriggerCapsulle({ children, handleNext, handlePrev, innerRef, is
 
 
   return (
-    <div ref={innerRef} className="w-full py-3 left-0 z-[9999999999999] gap-4 flex items-center justify-center pointer-events-none" style={{ position: isCapsuleDocked ? "absolute" : "fixed", bottom: isCapsuleDocked ? "auto" : 0, top: isCapsuleDocked ? 0 : "auto",left: 0,}}>
-      <AnimatePresence>
-        {isCapsuleVisible && (
-          <>
-            {/* LEFT CAPSULE: Progress Track (Highly subtle dynamic response) */}
-            <motion.div 
-              ref={leftTrackRef}
-              custom={widths}
-              variants={leftPhysics}
-              initial="hidden"
-              animate="visible"
-              exit="hiddenState"
-              onMouseMove={(e) => handleMouseMove(e, leftTrackRef.current, 0.25)}
-              onMouseLeave={() => handleMouseLeave(leftTrackRef.current)}
-              whileHover={{ boxShadow: "0 12px 40px -12px rgba(255, 255, 255, 0.12)" }}
-              className="h-16 lg:h-20 overflow-hidden relative group pointer-events-auto will-change-transform select-none rounded-[33px] border border-white/[0.03] transition-shadow duration-500"
-            >
-              <div className="js-jelly-inner w-full h-full will-change-transform origin-center">
-                <Glass radius={20} optics={{...PLAYER_OPTICS}} className="w-full h-full ">
-                  <Monoco 
-                    borderRadius={33} 
-                    smoothing={1} 
-                    clip={true} 
-                    className="w-full  h-full flex items-center bg-darGray/10 justify-center pointer-events-auto relative overflow-hidden"
-                  >
-                    {/* Dynamic Cursor Spotlight Ray */}
-                    <div 
-                      className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300 mix-blend-screen z-10"
-                      style={{
-                        background: `radial-gradient(230px circle at var(--mouse-x, 0px) var(--mouse-y, 0px), rgba(255, 255, 255, 0.05), transparent 100%)`
-                      }}
-                    />
-                    
-                    <motion.div variants={contentReveal} className="w-full h-full flex items-center justify-center relative z-20">
-                      {children}
-                    </motion.div>
-                  </Monoco>
-                </Glass>
-              </div>
-            </motion.div>
+<AnimatePresence>
+  <motion.div 
+    layout 
+    transition={{
+      type: "spring",
+      mass:1.5,
+      duration:0.9
+    }}
+    ref={innerRef} 
+    className={`w-full  py-3 left-0 z-[9999999999999] gap-4 flex items-center pointer-events-none justify-center    ${cleanSpace && !isCapsuleDocked &&"xl:-ml-[18%] 2xl:-ml-[12%]"}`} 
+    style={{ 
+      position: isCapsuleDocked ? "absolute" : "fixed", 
+      bottom: isCapsuleDocked ? "auto" : 0, 
+      top: isCapsuleDocked ? 0 : "auto",
+      left: 0,
+    }}
+  >
+    {isCapsuleVisible && (
+      <>
+        {/* LEFT CAPSULE: Progress Track */}
+        <motion.div 
+          ref={leftTrackRef}
+          custom={safeWidths}
+          variants={leftPhysics}
+          initial="hidden"
+          animate="visible"
+          exit="hiddenState"
+          whileHover={{ boxShadow: "0 12px 40px -12px rgba(255, 255, 255, 0.12)" }}
+          className={`h-14 blured2 rounded-2xl overflow-visible lg:h-20  relative group clickable will-change-transform select-none   transition-shadow duration-500`}
+        >
+          <div className="js-jelly-inner w-full h-full will-change-transform clickable origin-center">
+            <Glass radius={33} optics={{...PLAYER_OPTICS}} className="w-full h-full ">
+              <Monoco 
+                borderRadius={widths.rouneded} 
+                smoothing={1} 
+                clip={true} 
+                className={`w-full h-full flex items-center ${isCapsuleDocked?"bg-lightGray dark:bg-darGray/40":"bg-darGray/20 dark:bg-darGray/30"}    clickable justify-center relative overflow-hidden`}
+              >
 
-            {/* RIGHT CAPSULE: Action Triggers (Original bouncy body-jelly physics) */}
-            <motion.div 
-              ref={rightTrackRef}
-              custom={widths}
-              variants={rightPhysics}
-              initial="hidden"
-              animate="visible"
-              exit="hiddenState"
-              onMouseMove={(e) => handleMouseMove(e, rightTrackRef.current, 1.0)}
-              onMouseLeave={() => handleMouseLeave(rightTrackRef.current)}
-              whileHover={{ boxShadow: "0 12px 40px -12px rgba(255, 255, 255, 0.12)" }}
-              className="h-16 lg:h-20  overflow-hidden relative group pointer-events-auto will-change-transform select-none rounded-[33px] border border-white/[0.03] transition-shadow duration-500"
-            >
-              <div className="js-jelly-inner w-full h-full will-change-transform origin-center">
-                <Glass radius={33} optics={{...PLAYER_OPTICS2}} className="w-full h-full ">
-                  <Monoco 
-                    borderRadius={23} 
-                    smoothing={1} 
-                    border={[2, "#101010"]} 
-                    clip 
-                    className="w-full dark:bg-darGray/10 h-full flex items-center justify-center pointer-events-auto relative overflow-hidden"
-                  >
-                    {/* Dynamic Cursor Spotlight Ray */}
-                    <div 
-                      className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300 mix-blend-screen z-10"
-                      style={{
-                        background: `radial-gradient(140px circle at var(--mouse-x, 0px) var(--mouse-y, 0px), rgba(255, 255, 255, 0.08), transparent 100%)`
-                      }}
-                    />
-                    
-                    <motion.div variants={contentReveal} className="flex items-center justify-center gap-6 relative z-20 px-4">
-                      <motion.button 
-                        initial={{ opacity: 0, y: 15 }} 
-                        animate={{ 
-                          opacity: 1, 
-                          y: 0, 
-                          transition: { type: "spring", delay: 0.7 } 
-                        }} 
-                        exit={{ 
-                          opacity: 0, 
-                          y: 15, 
-                          transition: { duration: 0.15 } 
-                        }}
-                        onClick={handlePrev} 
-                        className="text-base sm:text-lg lg:text-xl cursor-pointer text-neutral-400 hover:text-white transition-colors duration-300 select-none focus:outline-none relative z-30"
-                      >
-                        ←
-                      </motion.button>
+                <div 
+                  className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300 mix-blend-screen z-10"
+                  style={{
+                    background: `radial-gradient(230px circle at var(--mouse-x, 0px) var(--mouse-y, 0px), rgba(255, 255, 255, 0.05), transparent 100%)`
+                  }}
+                />
+                
+                <motion.div variants={contentReveal} className="w-full h-full flex items-center justify-center relative z-20">
+                  {children}
+                </motion.div>
+              </Monoco>
+            </Glass>
+          </div>
+        </motion.div>
 
-                      <motion.button 
-                        initial={{ opacity: 0, y: 15 }} 
-                        animate={{ 
-                          opacity: 1, 
-                          y: 0, 
-                          transition: { type: "spring", delay: 0.75 } 
-                        }} 
-                        exit={{ 
-                          opacity: 0, 
-                          y: 15, 
-                          transition: { duration: 0.15 } 
-                        }}
-                        onClick={handleNext} 
-                        className="text-base sm:text-lg lg:text-xl cursor-pointer text-neutral-400 hover:text-white transition-colors duration-300 select-none focus:outline-none relative z-30"
-                      >
-                        →
-                      </motion.button>
-                    </motion.div>
-                  </Monoco>
-                </Glass>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
-    </div>
+        {/* RIGHT CAPSULE: Action Triggers */}
+        <motion.div
+          dir={"ltr"}
+          ref={rightTrackRef}
+          custom={safeWidths}
+          variants={rightPhysics}
+          initial="hidden"
+          animate="visible"
+          exit="hiddenState"
+          onMouseMove={(e) => handleMouseMove(e, rightTrackRef.current, 1.0)}
+          onMouseLeave={() => handleMouseLeave(rightTrackRef.current)}
+          whileHover={{ boxShadow: "0 12px 40px -12px rgba(255, 255, 255, 0.12)" }}
+          className="h-14 lg:h-20 blured2 overflow-visible relative group pointer-events-auto will-change-transform select-none   transition-shadow duration-500"
+        >
+          <div className="js-jelly-inner w-full h-full will-change-transform origin-center">
+            <Glass radius={widths.rouneded+6} optics={{...PLAYER_OPTICS2}} className="w-full h-full  ">
+              <Monoco 
+                borderRadius={widths.rouneded+4} 
+                smoothing={1} 
+                clip 
+                className={`w-full h-full flex  items-center ${isCapsuleDocked?"bg-lightGray  dark:bg-darGray/40":"bg-darGray/20 dark:bg-darGray/30"}    clickable justify-center relative overflow-hidden`}
+
+              >
+                <div 
+                  className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300 mix-blend-screen z-10"
+                  style={{
+                    background: `radial-gradient(140px circle at var(--mouse-x, 0px) var(--mouse-y, 0px), rgba(255, 255, 255, 0.08), transparent 100%)`
+                  }}
+                />
+                
+                <motion.div variants={contentReveal} className="flex items-center justify-center gap-4 lg:gap-6 relative z-20 px-2 lg:px-4">
+                  <motion.button 
+                    initial={{ opacity: 0, y: 15 }} 
+                    animate={{ 
+                      opacity: 1, 
+                      y: 0, 
+                      transition: { type: "spring", delay: 0.7 } 
+                    }} 
+                    exit={{ 
+                      opacity: 0, 
+                      y: 15, 
+                      transition: { duration: 0.15 } 
+                    }}
+                    onClick={handlePrev} 
+                     className="text-sm sm:text-lg lg:text-2xl font-black cursor-pointer font-satoshi text-darGray dark:text-[#87878a] flex items-center justify-center   dark:hover:text-white hover:text-black/90 transition-colors duration-300 select-none focus:outline-none relative z-30"
+
+                  > 
+                    <div className='w-10 h-10 bg-white/50 dark:bg-black/30 blur-md absolute -z-10'></div>
+                    <FontAwesomeIcon icon={faLeftLong}/>
+                  </motion.button>
+
+                  <motion.button 
+                    initial={{ opacity: 0, y: 15 }} 
+                    animate={{ 
+                      opacity: 1, 
+                      y: 0, 
+                      transition: { type: "spring", delay: 0.75 } 
+                    }} 
+                    exit={{ 
+                      opacity: 0, 
+                      y: 15, 
+                      transition: { duration: 0.15 } 
+                    }}
+                    onClick={handleNext} 
+                    className="text-sm  sm:text-lg lg:text-2xl font-black cursor-pointer font-satoshi text-darGray dark:text-[#87878a] flex items-center justify-center   dark:hover:text-white hover:text-black/90 transition-colors duration-300 select-none focus:outline-none relative z-30"
+
+                  > 
+                    <div className='w-10 h-10 bg-white/50 dark:bg-black/30 blur-md absolute -z-10'></div>
+                    <FontAwesomeIcon className='z-50' icon={faRightLong}/>
+                  </motion.button>
+                </motion.div>
+              </Monoco>
+            </Glass>
+          </div>
+        </motion.div>
+      </>
+    )}
+  </motion.div> 
+</AnimatePresence>
   );
 }

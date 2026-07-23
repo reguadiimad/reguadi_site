@@ -1,12 +1,11 @@
 import { useScroll, useTransform, motion } from 'framer-motion';
 import Monoco from '@monokai/monoco-react';
-import HeroHeading from './HeroText';
 
 export default function WhatICanDo() {
     const TheH1=({text})=><h1 className='text-9xl  font-extrabold mx-4 z-10 overflow-visible  text-transparent bg-darGray/20 dark:bg-lightGray/20 backdrop-blur-[3px] pt-4 pb-8' style={{WebkitMaskImage: 'linear-gradient(black, black)',WebkitMaskClip: 'text'}}>{text}</h1>;
     return (
-        <div className='w-full items-center justify-center flex flex-col relative h-[150vh] bg-gradient-to-b from-[#101010] to-transparent from-35%  '>
-        <div className=' h-full absolute w-0.5 bg-linear-to-b from-transparent via-lightGray/70 to-transparent  '/>
+        <div className='w-full items-center justify-center from-lightwhite to-transparent bg-gradient-to-b dark:from-[#101010] dark:to-[#10101000]  flex flex-col relative h-[150vh] capabilities-intro'>
+        <div className=' h-full absolute w-0.5  '/>
        
         <div className='w-full relative h-[40%] items-center justify-center flex flex-col'>
     

@@ -12,7 +12,7 @@ const useAppLanguage = () => {
 export const Card7 = () => {
   const { language } = useAppLanguage();
 
-  return (
+  return ( 
     <div className='w-full h-full flex flex-col items-center justify-center  '>
       <div className='h-[25%] md:h-[20%]  font-bold text-center md:mt-[10px] p-[10px]'>
         <p className='text-xs text-darGray lg:text-sm xl:text-base'>{CardsContent[0].content[language.indice].description}</p>
@@ -60,7 +60,8 @@ export const Card1 = () => {
         <div className='w-full whitespace-pre-line h-10 flex justify-center relative font-black text-2xl md:text-3xl lg:text-[40px] 2xl:text-[45px]'>
           <h1>{CardsContent[2].content[language.indice].description}</h1>
           <div className=' absolute whitespace-pre-line h-full hdMob1 z-20'>{CardsContent[2].content[language.indice].description}</div>
-        </div>
+        </div> 
+        <h1></h1>
       </div>
     </div>
   );
@@ -73,6 +74,7 @@ export const Card4 = () => {
     <>
       <img className='w-full h-full m-2 dark:hidden' src={`/images/graphic${language.indice}.png`} />
       <img className='w-full h-full m-2 hidden dark:block' src={`/images/graphic${language.indice}Dr.png`} />
+      
     </>
   );
 };

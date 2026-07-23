@@ -1,8 +1,7 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import * as THREE from 'three';
-import { Info } from 'lucide-react';
 import { useSelector } from 'react-redux';
 
 // ─── Performance Heuristic ────────────────────────────────────────────────────
@@ -12,16 +11,16 @@ const getPerformanceTier = () => {
 };
 
 // ─── Shaders ──────────────────────────────────────────────────────────────────
-// ALL wave + color + scale math lives here — zero CPU per frame
 const vertexShader = /* glsl */`
   uniform float uTime;
-  uniform vec2  uMouse;       // x, z on the wave plane
+  uniform vec2  uMouse;
   uniform float uInteraction;
   uniform float uCols;
   uniform float uRows;
   uniform float uSpacing;
   uniform vec3  uBaseColor;
   uniform vec3  uLedColor;
+  uniform float uVisibility;
 
   varying vec3  vColor;
   varying vec3  vNormal;
@@ -29,7 +28,6 @@ const vertexShader = /* glsl */`
   varying float vFogDepth;
 
   void main() {
-    // Reconstruct grid position from gl_InstanceID (no instanceMatrix needed)
     float fid  = float(gl_InstanceID);
     float rows = uRows;
     float xi   = floor(fid / rows);
@@ -41,13 +39,11 @@ const vertexShader = /* glsl */`
     float px = xi * uSpacing - offsetX;
     float pz = zi * uSpacing - offsetZ;
 
-    // Base wave (identical to original CPU math)
     float d = length(vec2(px, pz));
     float y = sin(d * 0.15 - uTime * 0.8) * 1.0
             + sin(px * 0.3  + uTime * 0.5) * 0.5;
 
-    // Mouse ripple + glow
-    float dist     = length(vec2(px - uMouse.x, pz - uMouse.y));
+    float dist = length(vec2(px - uMouse.x, pz - uMouse.y));
     float glowFactor = 0.0;
 
     if (uInteraction > 0.01) {
@@ -63,10 +59,9 @@ const vertexShader = /* glsl */`
 
     vColor = mix(uBaseColor, uLedColor, glowFactor);
 
-    // Per-particle scale (same formula as original)
-    float s = 0.5 + (max(0.0, y + 3.0) / 6.0) * 0.8;
+    float baseScale = 0.5 + (max(0.0, y + 3.0) / 6.0) * 0.8;
+    float s = baseScale * uVisibility;
 
-    // Final world position: scale sphere verts, then translate to grid slot
     vec3 worldPos = position * s + vec3(px, y, pz);
 
     vec4 mvPos  = modelViewMatrix * vec4(worldPos, 1.0);
@@ -97,20 +92,16 @@ const fragmentShader = /* glsl */`
     vec3 L = normalize(uDirLightDir);
     vec3 V = normalize(vViewPos);
 
-    // Ambient
     vec3 color = vColor * uAmbientIntensity;
 
-    // Diffuse
     float diff = max(dot(N, L), 0.0);
     color += vColor * uDirLightColor * diff * uDirLightIntensity;
 
-    // Specular (Phong)
     vec3  R    = reflect(-L, N);
     float spec = pow(max(dot(V, R), 0.0), 80.0);
     color += uSpecularColor * uDirLightColor * spec * uDirLightIntensity * 0.5;
 
-    // Exponential² fog — matches THREE.FogExp2 formula exactly
-    float fog   = exp(-uFogDensity * uFogDensity * vFogDepth * vFogDepth);
+    float fog = exp(-uFogDensity * uFogDensity * vFogDepth * vFogDepth);
     color = mix(uFogColor, color, clamp(fog, 0.0, 1.0));
 
     gl_FragColor = vec4(color, 1.0);
@@ -118,10 +109,22 @@ const fragmentShader = /* glsl */`
 `;
 
 // ─── Component ────────────────────────────────────────────────────────────────
-export default function ParticleWaves() {
+export default function ParticleWaves({ showWaves = true }) {
   const mountRef = useRef(null);
-  const [showUI, setShowUI] = useState(true);
   const theme = useSelector((state) => state.theme.theme);
+
+  const showWavesRef = useRef(showWaves);
+  const currentVisibilityRef = useRef(showWaves ? 1 : 0);
+  const isLoopRunningRef = useRef(false);
+  const startLoopRef = useRef(null);
+
+  // Sync state & start loop when toggled back to true
+  useEffect(() => {
+    showWavesRef.current = showWaves;
+    if (showWaves && startLoopRef.current) {
+      startLoopRef.current();
+    }
+  }, [showWaves]);
 
   useEffect(() => {
     if (!mountRef.current) return;
@@ -142,9 +145,8 @@ export default function ParticleWaves() {
     const dirLightIntens  = isDark ? 0.5 : 0.8;
 
     // ── Scene ──
-    const scene    = new THREE.Scene();
+    const scene = new THREE.Scene();
     scene.background = new THREE.Color(bgColor);
-    // Fog visual handled in shader; no THREE.Fog needed
 
     const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 200);
     camera.position.set(0, 18, 35);
@@ -164,6 +166,7 @@ export default function ParticleWaves() {
       uTime:             { value: 0 },
       uMouse:            { value: new THREE.Vector2(0, 0) },
       uInteraction:      { value: 0 },
+      uVisibility:       { value: currentVisibilityRef.current },
       uCols:             { value: cols },
       uRows:             { value: rows },
       uSpacing:          { value: spacing },
@@ -179,62 +182,97 @@ export default function ParticleWaves() {
     };
 
     const material = new THREE.ShaderMaterial({
-      uniforms,
       vertexShader,
       fragmentShader,
+      uniforms,
     });
 
-    // ── InstancedMesh — matrices set ONCE to identity, never touched again ──
     const mesh = new THREE.InstancedMesh(geometry, material, count);
-    mesh.frustumCulled = false;    // Our grid extends far; skip Three.js culling
-    mesh.matrixAutoUpdate = false; // We never move the mesh object itself
+    mesh.frustumCulled = false;
+    mesh.matrixAutoUpdate = false;
 
     const identity = new THREE.Matrix4();
     for (let i = 0; i < count; i++) mesh.setMatrixAt(i, identity);
 
-    // Mark STATIC — driver can cache this buffer on the GPU
     mesh.instanceMatrix.setUsage(THREE.StaticDrawUsage);
     mesh.instanceMatrix.needsUpdate = true;
 
     scene.add(mesh);
 
     // ── Interaction ──
-    const raycaster   = new THREE.Raycaster();
-    const pointer     = new THREE.Vector2();
-    const plane       = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
-    const targetVec   = new THREE.Vector3();
-    const smoothTarget = new THREE.Vector3();
+    const raycaster     = new THREE.Raycaster();
+    const pointer       = new THREE.Vector2();
+    const plane         = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+    const targetVec     = new THREE.Vector3();
+    const smoothTarget  = new THREE.Vector3();
     let interactionStrength = 0;
 
-    // ── Animation loop — FPS-capped at 60 ──
+    // ── Animation Loop ──
     const clock = new THREE.Clock();
     const targetInterval = 1000 / 60;
     let lastTimestamp = 0;
-    let animationId;
+    let animationId = null;
 
     const animate = (timestamp) => {
+      if (!isLoopRunningRef.current) return;
+
       animationId = requestAnimationFrame(animate);
 
-      // Skip frame if we're ahead of 60fps — saves GPU on 120/144hz screens
       if (timestamp - lastTimestamp < targetInterval) return;
       lastTimestamp = timestamp;
 
+      // 1. Smoothly interpolate visibility down/up
+      const targetVis = showWavesRef.current ? 1.0 : 0.0;
+      currentVisibilityRef.current += (targetVis - currentVisibilityRef.current) * 0.08;
+      uniforms.uVisibility.value = currentVisibilityRef.current;
+
+      // 2. MAXIMUM OPTIMIZATION: When fully faded out, STOP animation frame completely
+      if (!showWavesRef.current && currentVisibilityRef.current < 0.001) {
+        currentVisibilityRef.current = 0;
+        uniforms.uVisibility.value = 0;
+        mesh.visible = false;
+        
+        // Stop Loop Completely
+        cancelAnimationFrame(animationId);
+        isLoopRunningRef.current = false;
+        return;
+      }
+
+      mesh.visible = true;
+
       const time = clock.getElapsedTime();
 
-      raycaster.setFromCamera(pointer, camera);
-      raycaster.ray.intersectPlane(plane, targetVec);
+      if (showWavesRef.current) {
+        raycaster.setFromCamera(pointer, camera);
+        raycaster.ray.intersectPlane(plane, targetVec);
+      }
 
-      const targetStrength = targetVec.length() < 45 ? 1 : 0;
+      const targetStrength = (showWavesRef.current && targetVec.length() < 45) ? 1 : 0;
       interactionStrength += (targetStrength - interactionStrength) * 0.05;
       smoothTarget.lerp(targetVec, 0.1);
 
-      // ✅ Only 3 uniform updates — zero per-instance CPU work
       uniforms.uTime.value        = time;
       uniforms.uMouse.value.set(smoothTarget.x, smoothTarget.z);
       uniforms.uInteraction.value = interactionStrength;
 
       renderer.render(scene, camera);
     };
+
+    const startLoop = () => {
+      if (!isLoopRunningRef.current) {
+        isLoopRunningRef.current = true;
+        clock.start();
+        lastTimestamp = performance.now();
+        animationId = requestAnimationFrame(animate);
+      }
+    };
+
+    startLoopRef.current = startLoop;
+
+    // Initial check
+    if (showWavesRef.current) {
+      startLoop();
+    }
 
     const handleResize = () => {
       camera.aspect = window.innerWidth / window.innerHeight;
@@ -243,18 +281,20 @@ export default function ParticleWaves() {
     };
 
     const handleMouseMove = (e) => {
+      if (!showWavesRef.current) return;
       pointer.x =  (e.clientX / window.innerWidth)  * 2 - 1;
       pointer.y = -(e.clientY / window.innerHeight) * 2 + 1;
     };
 
     window.addEventListener('resize', handleResize);
     window.addEventListener('mousemove', handleMouseMove);
-    animationId = requestAnimationFrame(animate);
 
     return () => {
+      isLoopRunningRef.current = false;
+      startLoopRef.current = null;
       window.removeEventListener('resize', handleResize);
       window.removeEventListener('mousemove', handleMouseMove);
-      cancelAnimationFrame(animationId);
+      if (animationId) cancelAnimationFrame(animationId);
       if (mountRef.current?.contains(renderer.domElement)) {
         mountRef.current.removeChild(renderer.domElement);
       }
@@ -265,16 +305,12 @@ export default function ParticleWaves() {
   }, [theme]);
 
   return (
-    <div className="fixed top-0 left-0 -z-10 w-full h-screen bg-white dark:bg-black overflow-hidden font-sans text-slate-900 dark:text-slate-100">
+    <div 
+      className={`fixed top-0 left-0 w-full h-screen bg-white dark:bg-black overflow-hidden font-sans text-slate-900 dark:text-slate-100 transition-opacity duration-700 ${
+        showWaves ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+      }`}
+    >
       <div ref={mountRef} className="absolute inset-0 z-0" />
-      <div className="absolute bottom-8 right-8 z-10 flex gap-4">
-        <button
-          onClick={() => setShowUI(!showUI)}
-          className="p-3 rounded-full bg-white/80 dark:bg-black/80 backdrop-blur-sm shadow-lg hover:bg-white dark:hover:bg-black hover:scale-105 transition-all active:scale-95"
-        >
-          <Info className="w-5 h-5 text-slate-700 dark:text-slate-300" />
-        </button>
-      </div>
     </div>
   );
 }

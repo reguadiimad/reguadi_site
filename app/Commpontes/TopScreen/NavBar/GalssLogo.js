@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { LiquidGlass } from "@liquidglass/react";
+import { Glass } from "@samasante/liquid-glass";
 import { motion, AnimatePresence } from "framer-motion";
 
 const GlassLogo = ({
@@ -11,6 +11,7 @@ const GlassLogo = ({
   isArabic = false,
 }) => {
   const [mounted, setMounted] = useState(false);
+
 
   useEffect(() => {
     setMounted(true);
@@ -53,10 +54,31 @@ const GlassLogo = ({
       />
     );
   }
+const PLAYER_OPTICS2 = {
+  clipToShape: false,
+  softEdge: true,
+  strength: isArabic?1.1:1.6,
+  depth: isArabic?0.2:0.3,
+  curvature: 2,
+  bend: 0.6,
+  bendWidth: 0.1,
+  dispersion: 2,
+  specular: 0.1,
+  sheenAngle: 100,
+  glow: 1,
+  glowSpread: 1,
+  glowFalloff: 1,
+  sheen: 1,
+  sheenWidth: 0,
+  sheenFalloff: 1,
+  frost: 1.9,
+  brightness: 0,
+  thickness: 0,
+};
 
   return (
     <div
-      className={`relative shrink-0 ${className}`}
+      className={`relative shrink-0 ${className}`} 
       style={{
         width: width || undefined,
         ...aspectRatioStyle,
@@ -71,24 +93,20 @@ const GlassLogo = ({
             z-0
             overflow-hidden
             blured
-
+           ${isArabic?"w-[38%] -mr-[5%] h-[80.5%] rounded-tr-2xl rounded-bl-2xl":" w-[77%] -ml-[5%] h-[90.5%] rounded-tr-2xl"}
             transition-all
             duration-700
             ease-[cubic-bezier(0.25,0.1,0.25,1)]
+
 
             ${current.glassStyle}
             ${isDark ? "bg-black/15" : ""}
           `}
         >
-          <LiquidGlass
-            blur={isDark ? 1 : 1}
-            contrast={isDark ? 0.85 : 1.9}
-            brightness={isDark ? 1.2 : 1}
-            displacementScale={1.5}
-            elasticity={0.9}
-            saturation={1.15}
-            borderRadius={0}
-          />
+          <Glass radius={12} optics={{...PLAYER_OPTICS2}} className="w-full h-full bg-lightGray/5 blured  lg:rounded-[12px]"
+          >
+            <div className="w-full h-full"></div>
+          </Glass>
         </div>
 
         {/* LOGO IMAGE */}

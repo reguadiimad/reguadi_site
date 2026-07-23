@@ -27,31 +27,56 @@ export default function Home() {
   const prevValues = useRef({ playingSound, theTheme, language });
   const lastY = useRef(0);
   const direction = useRef(null);
+  const [cleanSpace,setCleanSpace] = useState(false);
+  const [isDocked,setIsDocked] = useState(false);
+  const [showWaves,setShowWaves] = useState(true);
 
-  useEffect(() => {
-    let timeoutId;
+useEffect(() => {
+  let timeoutId;
+  const prev = prevValues.current;
 
-    if (playingSound !== prevValues.current.playingSound) {
-      setCurrentCapsule("sound");
-      timeoutId = setTimeout(() => setCurrentCapsule(""), 7000);
-    } else if (
-      theTheme !== prevValues.current.theTheme &&
-      prevValues.current.theTheme !== "system"
-    ) {
-      setCurrentCapsule("theme");
-      timeoutId = setTimeout(() => setCurrentCapsule(""), 7000);
-    } else if (
-      language.indice !== prevValues.current.language.indice &&
-      prevValues.current.language.indice
-    ) {
-      setCurrentCapsule("language");
-      timeoutId = setTimeout(() => setCurrentCapsule(""), 7000);
-    }
+  // 1. Check if playingSound changed
+  if (playingSound !== prev.playingSound) {
+    setCurrentCapsule("sound");
+    setCleanSpace(true);
+    timeoutId = setTimeout(() => {
+      setCurrentCapsule("");
+      setCleanSpace(false);
+    }, 7000);
 
-    prevValues.current = { playingSound, theTheme, language };
+  // 2. Check if theTheme changed
+  } else if (
+    theTheme !== prev.theTheme &&
+    prev.theTheme !== "system"
+  ) {
+    setCurrentCapsule("theme");
+    setCleanSpace(true);
+    timeoutId = setTimeout(() => {
+      setCurrentCapsule("");
+      setCleanSpace(false);
+    }, 7000);
 
-    return () => clearTimeout(timeoutId);
-  }, [playingSound, theTheme, language]);
+  // 3. Check if language.indice changed
+  } else if (
+    language.indice !== prev.language?.indice &&
+    prev.language?.indice
+  ) {
+    setCurrentCapsule("language");
+    setCleanSpace(true);
+    timeoutId = setTimeout(() => {
+      setCurrentCapsule("");
+      setCleanSpace(false);
+    }, 7000);
+  }
+
+  // Update the ref to store the latest values for the next render comparison
+  prevValues.current = { playingSound, theTheme, language };
+
+  return () => clearTimeout(timeoutId);
+
+// Removed `cleanSpace` (not read inside) 
+// Swapped `language` for `language.indice` (prevents unnecessary object reference triggers)
+}, [playingSound, theTheme, language.indice]); 
 
   useEffect(() => {
     lastY.current = window.scrollY;
@@ -92,10 +117,10 @@ export default function Home() {
   return (
     <div
       className={`${
-        isArabic ? "font-arb" : ""
-      } w-screen flex flex-col  -mt-2 items-center selection:bg-theBlue selection:text-white dark:selection:bg-theOrange`}
+        isArabic ? "font-arb" : "font-satoshi"
+      } w-screen flex flex-col  -mt-2 items-center dark:bg-[#101010] -z-[999999999999] selection:bg-theBlue selection:text-white dark:selection:bg-theOrange`}
     >
-      <ParticleWaves/>
+   <ParticleWaves showWaves={showWaves} />
 
       <AnimatePresence mode="wait">
         {!mode1 && (
@@ -123,24 +148,29 @@ export default function Home() {
         )}
       </AnimatePresence>
 
+
       <NavBar mode1={mode1} toggleMode={() => setMode1((prev) => !prev)} />
 
-<HomeView
+      <HomeView
+        cleanSpace={cleanSpace}
         showTyping={showTyping}
         setShowTyping={setShowTyping}
         typingComplete={typingComplete}
         setTypingComplete={setTypingComplete}
-      />
+        setIsDocked={setIsDocked}
+        setShowWaves={setShowWaves}
+        />
 
 
 
           {typingComplete && <About/>}
 
-<IPadCursor/>
+          <IPadCursor/>
 
 
-      <BtmScreen currentCapsule={currentCapsule} mode1={mode1} />
+      <BtmScreen currentCapsule={currentCapsule} cleanSpace isDocked={isDocked} mode1={mode1} />
       
+
       
     </div>
   );

@@ -1,65 +1,16 @@
 import { useState, useCallback } from 'react';
-import { AnimatePresence, LayoutGroup, motion} from 'framer-motion';
+import {  LayoutGroup, motion} from 'framer-motion';
 import AnimatedWelcome from './AnimatedWelcome';
 import TypingAnimation from './IntroductionView';
 import ArchedCarousel from './ArchedCarousel'; // Import the new component
 import WhatICanDo from './WhatICanDo';
 import TextRevealSection from './ItsMe';
-import { Glass } from '@samasante/liquid-glass';
-import Monoco from '@monokai/monoco-react';
-
-
-
-const PLAYER_OPTICS = {
-
-  clipToShape: false,
-  softEdge: true,
-  strength: 0.5,
-  depth: 0.15,
-  curvature: 2,
-  bend: 0.15,
-  bendWidth: 0.1,
-  dispersion: 0.1,
-  specular: 0,
-  sheenAngle: 100,
-  glow: 1,
-  glowSpread: 1,
-  glowFalloff: 1,
-  sheen: 1,
-  sheenWidth: 0,
-  sheenFalloff:  1,
-  frost: 1,
-  brightness: 0,
-  thickness: 0,
-};
-
-const PLAYER_OPTICS2 = {
-
-  clipToShape: false,
-  softEdge: true,
-  strength: 0.7,
-  depth: 0.15,
-  curvature: 1,
-  bend: 0.3,
-  bendWidth: 0.1,
-  dispersion: 1,
-  specular: 0,
-  sheenAngle: 100,
-  glow: 1,
-  glowSpread: 1,
-  glowFalloff: 1,
-  sheen: 1,
-  sheenWidth: 0,
-  sheenFalloff:  1,
-  frost: 1,
-  brightness: 0,
-  thickness: 0,
-};
 
 
 
 
-export default function HomeView({showTyping, setShowTyping,typingComplete, setTypingComplete}) {
+
+export default function HomeView({showTyping, setShowTyping,typingComplete, setTypingComplete,cleanSpace,setIsDocked,setShowWaves}) {
     const handleAnimationComplete = useCallback(() => {
       setTimeout(() => {
         setShowTyping(true);
@@ -87,12 +38,12 @@ export default function HomeView({showTyping, setShowTyping,typingComplete, setT
           </motion.div>
         }
       </LayoutGroup>
-      
 
      { showTyping && typingComplete && (
         <div className='w-full relative  '>
           <ArchedCarousel />
-          <TextRevealSection />
+          <TextRevealSection setShowWaves={setShowWaves} setIsDocked={setIsDocked} cleanSpace={cleanSpace}  />
+   
           <WhatICanDo />
         </div>
       )}

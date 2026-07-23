@@ -81,7 +81,6 @@ const GearObj = ({
 
   useFrame((state, delta) => {
     if (meshRef.current) {
-      // Continuous internal spinning of the gears
       if (invertRotation) {
         meshRef.current.rotation.z += delta * speed;
       } else {
@@ -160,17 +159,14 @@ const BackendGears = ({ isDarkMode, quality }) => {
 
   useFrame(() => {
     if (groupRef.current) {
-      // Apply Scale
       groupRef.current.scale.setScalar(responsiveScale);
 
-      // Apply Mouse Parallax X
       groupRef.current.rotation.x = THREE.MathUtils.lerp(
         groupRef.current.rotation.x,
         mouse.current.y * 0.4,
         0.1
       );
 
-      // Apply Mouse Parallax Y
       groupRef.current.rotation.y = THREE.MathUtils.lerp(
         groupRef.current.rotation.y,
         mouse.current.x * -0.6,
@@ -191,7 +187,6 @@ const BackendGears = ({ isDarkMode, quality }) => {
   const DISTANCE = R1 + R2 + TOOTH_DEPTH + GAP_CORRECTION + 0.31;
   const X_OFFSET = DISTANCE / 2;
 
-  // Static tilt angle (previously the target of the spring)
   const STATIC_TILT = THREE.MathUtils.degToRad(-25);
 
   return (
@@ -222,7 +217,7 @@ const BackendGears = ({ isDarkMode, quality }) => {
   );
 };
 
-export default function BackendGearDisplay({isArabic}) {
+export default function BackendGearDisplay({ isArabic }) {
   const currentTheme = useSelector((state) => state.theme?.theme) || "system";
   const [systemIsDark, setSystemIsDark] = useState(false);
   const [dpr, setDpr] = useState(1.5);
@@ -243,9 +238,7 @@ export default function BackendGearDisplay({isArabic}) {
     currentTheme === "dark" || (currentTheme === "system" && systemIsDark);
 
   return (
-    <div className={`h-[250px]  md:h-[300px] lg:h-[440px] xl:h-[580px] w-full flex items-center justify-center z-0 translate-x-[29%] translate-y-[10%] ${isArabic&&" translate-y-0"} lg:translate-y-[20%]`}>
-      
-      {/* Wrapper controls opacity visibility */}
+    <div className={`h-[250px] md:h-[300px] lg:h-[440px] xl:h-[580px] w-full flex items-center justify-center z-0 translate-x-[29%] translate-y-[10%] ${isArabic && "translate-y-0"} lg:translate-y-[20%]`}>
       <div 
         className={`w-full h-full transition-opacity duration-1000 ease-out ${
           ready ? "opacity-100" : "opacity-0"

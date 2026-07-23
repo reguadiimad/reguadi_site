@@ -17,6 +17,25 @@
   font-display: swap;
 }
 
+
+@font-face {
+  font-family: 'ClashDisplay';
+  src: url('../public/fonts/ClashDisplay-Variable.woff2') format('woff2');
+  font-weight: 100 900; /* Automatically maps all weights from thin to bold */
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Satoshi';
+  src: url('../public/fonts/Satoshi-Variable.woff2') format('woff2');
+  font-weight: 100 900; /* Automatically maps all weights from thin to bold */
+  font-style: normal;
+  font-display: swap;
+
+}
+
+
+
 :root {
   --brm: 1;
 }
@@ -41,6 +60,7 @@
   
   --color-charcoal: #1B1B1E;
   --color-darGray: #69696D;
+  --color-lightwhite: #eeeef1;
   --color-lightGray: #E0E0E4;
   --color-theBlue: #3179FF;
   --color-theGreen: #41D959;
@@ -52,15 +72,17 @@
   --color-vibrantYellow: #FFD931;
   --color-mutedYellow: #E4E4A2;
 
-  --font-satoshi: 'satoshi', sans-serif;
+  --font-satoshi: 'Satoshi', sans-serif;
   --font-arb: 'Cairo', sans-serif;
   --font-fifa: 'Fifa26', sans-serif;
-  --font-clashDisplay: 'Clash Display', sans-serif;
+  --font-clashDisplay: 'ClashDisplay', sans-serif;
   --font-arb1: "Aref Ruqaa", serif;
   --font-arb2: "Alkalami", serif;
   --font-time: "timeFont", sans-serif;
   --font-tall: "tallFont", sans-serif;
   --font-caveat: "Caveat", cursive;
+
+  
 }
 
 @layer theme {
@@ -76,9 +98,13 @@
 }
 
 body {
+  position: relative;
   background: var(--background);
   color: var(--foreground);
   font-family: 'satoshi', sans-serif;
+
+  background:#87878a ;
+
 }
 
 /* Force-hides native hardware cursors exclusively for fine pointers to preserve mobile accessibility rules */
@@ -124,9 +150,19 @@ body {
 .blured {
   -webkit-backdrop-filter: blur(2px);
 }
+.blured2 {
+  -webkit-backdrop-filter: blur(5px);
+}
+.blured3 {
+  -webkit-backdrop-filter: blur(10px);
+  
+}
+
+
 
 .links:hover {
   text-shadow: 0px 0px 8px rgba(0, 0, 0, 0.069);
+
 }
 
 .sk {
@@ -307,3 +343,45 @@ body {
 .safariBlur {
   -webkit-filter: blur(4px);
 }
+
+
+ @keyframes charFadeIn {
+          0% {
+            opacity: 0;
+            filter: blur(50px);
+
+
+          }
+          100% {
+            opacity: 1;
+            filter: blur(0);
+
+
+
+          }
+        }
+        .fade-char {
+
+          animation: charFadeIn 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+           @keyframes charFadeIn2 {
+          0% {
+            opacity: 0;
+            filter: blur(50px);
+  
+        
+
+          }
+          100% {
+            opacity: 1;
+            filter: blur(0);
+
+
+
+          }
+        }
+        .fade-char2 {
+
+          animation: charFadeIn 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
