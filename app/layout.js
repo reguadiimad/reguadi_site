@@ -1,11 +1,10 @@
-
 import "./globals.css";
 import "./lib/fontawesome";
-import {ThemeProvider} from "./utils/ThemeProvider";
-import {Providers} from "./Providers";
+import { ThemeProvider } from "./utils/ThemeProvider";
+import { Providers } from "./Providers";
+import SmoothScrolling from "../app/Commpontes/SmoothScrolling" // 👈 1. Import هنا
 import "@fontsource/instrument-serif/400.css";
 import "@fontsource/instrument-serif/400-italic.css";
-
 
 export const metadata = {
   title: "Reguadi Imad",
@@ -15,16 +14,16 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en" suppressHydrationWarning>
-
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="true" />
-        <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"rel="stylesheet"/>
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet"/>
         <link href="https://api.fontshare.com/v2/css?f[]=clash-display@200,300,400,500,600,700,1&f[]=satoshi@300,301,400,401,500,501,700,701,900,901,1,2&display=swap" rel="stylesheet"></link>
         <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@200..1000&family=El+Messiri:wght@400..700&display=swap" rel="stylesheet"></link>
         <link href="https://fonts.googleapis.com/css2?family=Alkalami&family=Aref+Ruqaa:wght@400;700&display=swap" rel="stylesheet"></link>
         <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400..700&display=swap" rel="stylesheet"></link>
-        <script dangerouslySetInnerHTML={{
+        <script
+          dangerouslySetInnerHTML={{
             __html: `
               (function () {
                 function clean() {
@@ -43,7 +42,6 @@ export default function RootLayout({ children }) {
                   }
                 }
                 clean();
-                // Some extensions re-inject, so clean a few more times before hydration
                 new MutationObserver(clean).observe(document.documentElement, {
                   attributes: true,
                   subtree: true,
@@ -51,17 +49,19 @@ export default function RootLayout({ children }) {
                 });
               })();
             `,
-        }}/>
+          }}
+        />
       </head>
 
-      <body suppressHydrationWarning  className="bg-white   dark:bg-black text-black dark:text-white ">
+      <body suppressHydrationWarning className="bg-white dark:bg-black text-black dark:text-white">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <Providers>
-            <main>{children}</main>
-            
+            {/* 👈 2. غلّف الـ main بـ SmoothScrolling */}
+            <SmoothScrolling>
+              <main>{children}</main>
+            </SmoothScrolling>
           </Providers>
         </ThemeProvider>
-        
       </body>
     </html>
   );

@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import gsap from 'gsap';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, delay } from 'framer-motion';
 import Monoco from '@monokai/monoco-react';
 import { Glass } from '@samasante/liquid-glass';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -172,17 +172,13 @@ export function TriggerCapsulle({ children, handleNext, handlePrev, innerRef, is
       }
     }),
     hiddenState: {
-      width: '64px',
-      x: 28,
+
       y: 240,
-      scaleX: 0.58,
-      scaleY: 1.15,
-      opacity: 0,
+      x:124,
+      
       transition: { 
-        width: { type: 'spring', stiffness: 155, damping: 17, mass: 0.9 },
-        x: { type: 'spring', stiffness: 155, damping: 17, mass: 0.9 },
-        y: { type: 'spring', stiffness: 170, damping: 18, mass: 1.05, delay: 0.06 },
-        opacity: { delay: 0.18, duration: 0.18, ease: 'easeIn' }
+        x:{delay:0,type:"spring",mass:2},
+        y:{delay:0.1,type:"spring",mass:2}
       }
     }
   };
@@ -213,17 +209,13 @@ export function TriggerCapsulle({ children, handleNext, handlePrev, innerRef, is
       }
     }),
     hiddenState: {
-      width: '64px',
-      x: -28,
+
       y: 240,
-      scaleX: 0.58,
-      scaleY: 1.15,
-      opacity: 0,
+      x:-104,
+      
       transition: { 
-        width: { type: 'spring', stiffness: 155, damping: 17, mass: 0.9 },
-        x: { type: 'spring', stiffness: 155, damping: 17, mass: 0.9 },
-        y: { type: 'spring', stiffness: 170, damping: 18, mass: 1.05, delay: 0.06 },
-        opacity: { delay: 0.18, duration: 0.18, ease: 'easeIn' }
+        x:{delay:0.18,type:"spring",mass:2},
+        y:{delay:0.25,type:"spring",mass:2}
       }
     }
   };
@@ -253,7 +245,7 @@ export function TriggerCapsulle({ children, handleNext, handlePrev, innerRef, is
       duration:0.9
     }}
     ref={innerRef} 
-    className={`w-full  py-3 left-0 z-[9999999999999] gap-4 flex items-center pointer-events-none justify-center    ${cleanSpace && !isCapsuleDocked &&"xl:-ml-[18%] 2xl:-ml-[12%]"}`} 
+    className={`w-full  py-3 left-0 z-[9999999999999] gap-4 flex items-center justify-center    ${cleanSpace && !isCapsuleDocked &&"xl:-ml-[18%] 2xl:-ml-[12%]"}`} 
     style={{ 
       position: isCapsuleDocked ? "absolute" : "fixed", 
       bottom: isCapsuleDocked ? "auto" : 0, 
@@ -261,7 +253,8 @@ export function TriggerCapsulle({ children, handleNext, handlePrev, innerRef, is
       left: 0,
     }}
   >
-    {isCapsuleVisible && (
+  <AnimatePresence>
+      {isCapsuleVisible && (
       <>
         {/* LEFT CAPSULE: Progress Track */}
         <motion.div 
@@ -271,8 +264,8 @@ export function TriggerCapsulle({ children, handleNext, handlePrev, innerRef, is
           initial="hidden"
           animate="visible"
           exit="hiddenState"
-          whileHover={{ boxShadow: "0 12px 40px -12px rgba(255, 255, 255, 0.12)" }}
-          className={`h-14 blured2 rounded-2xl overflow-visible lg:h-20  relative group clickable will-change-transform select-none   transition-shadow duration-500`}
+          
+          className={`h-14 blured2 rounded-2xl overflow-visible lg:h-20  relative group  clickable will-change-transform select-none   transition-shadow duration-500`}
         >
           <div className="js-jelly-inner w-full h-full will-change-transform clickable origin-center">
             <Glass radius={33} optics={{...PLAYER_OPTICS}} className="w-full h-full ">
@@ -283,12 +276,7 @@ export function TriggerCapsulle({ children, handleNext, handlePrev, innerRef, is
                 className={`w-full h-full flex items-center ${isCapsuleDocked?"bg-lightGray dark:bg-darGray/40":"bg-darGray/20 dark:bg-darGray/30"}    clickable justify-center relative overflow-hidden`}
               >
 
-                <div 
-                  className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300 mix-blend-screen z-10"
-                  style={{
-                    background: `radial-gradient(230px circle at var(--mouse-x, 0px) var(--mouse-y, 0px), rgba(255, 255, 255, 0.05), transparent 100%)`
-                  }}
-                />
+                
                 
                 <motion.div variants={contentReveal} className="w-full h-full flex items-center justify-center relative z-20">
                   {children}
@@ -375,6 +363,7 @@ export function TriggerCapsulle({ children, handleNext, handlePrev, innerRef, is
         </motion.div>
       </>
     )}
+  </AnimatePresence>
   </motion.div> 
 </AnimatePresence>
   );

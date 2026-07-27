@@ -118,7 +118,7 @@ useEffect(() => {
     <div
       className={`${
         isArabic ? "font-arb" : "font-satoshi"
-      } w-screen flex flex-col  -mt-2 items-center dark:bg-[#101010] -z-[999999999999] selection:bg-theBlue selection:text-white dark:selection:bg-theOrange`}
+      } w-screen flex flex-col  -mt-2 items-center dark:bg-[#101010]  bg-white -z-[999999999999] selection:bg-theBlue selection:text-white dark:selection:bg-theOrange`}
     >
    <ParticleWaves showWaves={showWaves} />
 

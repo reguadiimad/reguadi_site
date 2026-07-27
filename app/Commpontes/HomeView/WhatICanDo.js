@@ -1,38 +1,44 @@
 import { useScroll, useTransform, motion } from 'framer-motion';
 import Monoco from '@monokai/monoco-react';
 
+// Inside WhatICanDo.jsx
 export default function WhatICanDo() {
-    const TheH1=({text})=><h1 className='text-9xl  font-extrabold mx-4 z-10 overflow-visible  text-transparent bg-darGray/20 dark:bg-lightGray/20 backdrop-blur-[3px] pt-4 pb-8' style={{WebkitMaskImage: 'linear-gradient(black, black)',WebkitMaskClip: 'text'}}>{text}</h1>;
-    return (
-        <div className='w-full items-center justify-center from-lightwhite to-transparent bg-gradient-to-b dark:from-[#101010] dark:to-[#10101000]  flex flex-col relative h-[150vh] capabilities-intro'>
-        <div className=' h-full absolute w-0.5  '/>
-       
-        <div className='w-full relative h-[40%] items-center justify-center flex flex-col'>
-    
-          <ScrollingCircle/>
-          <div className='w-full absolute flex items-center justify-center'>
-            <div className='h-0.5 w-full bg-linear-to-r from-transparent via-lightGray/70 to-transparent absolute z-0'/>
+  const TheH1 = ({ text }) => (
+    <h1 className="text-9xl font-extrabold mx-4 z-10 overflow-visible text-transparent bg-darGray/20 dark:bg-lightGray/20 backdrop-blur-[3px] pt-4 pb-8" style={{ WebkitMaskImage: 'linear-gradient(black, black)', WebkitMaskClip: 'text' }}>
+      {text}
+    </h1>
+  );
 
-           <TheH1 text="Play" />
+  return (
+    <div className="w-full min-h-screen items-center justify-center from-lightwhite to-transparent bg-gradient-to-b dark:from-[#101010] dark:to-[#10101000] flex flex-col relative capabilities-intro">
+      <div className="h-full absolute w-0.5" />
 
-           <Monoco borderRadius={50} smoothing={1} clip={true} className='spdy2 mx-10 hover:mx-20'>
-                <video className='w-125' autoPlay  muted playsInline><source src='Videos/ReelIntro.mp4' type='video/mp4' /></video>
-           </Monoco>
+      <div className="w-full relative h-[40%] items-center justify-center flex flex-col">
+        <ScrollingCircle />
+        <div className="w-full absolute flex items-center justify-center">
+          <div className="h-0.5 w-full bg-linear-to-r from-transparent via-lightGray/70 to-transparent absolute z-0" />
 
-           <TheH1 text="Reel" />
+          <TheH1 text="Play" />
 
-          </div>
-           <div className=' flex items-end justify-end  absolute bottom-[6%] right-[18%]'>
-            <img className='w-32 dark:hidden' src={'/images/see.png'}/>
-            <img className='w-32  hidden dark:block scale-x-110' src={'/images/seeDrk.png'}/>
-            <p className='text-theBlue dark:text-theOrange font-caveat text-4xl ml-2'>See whaht i can do :D</p>
-           </div>
-    
+          <Monoco borderRadius={50} smoothing={1} clip={true} className="spdy2 mx-10 hover:mx-20">
+            <video className="w-125" autoPlay muted playsInline>
+              <source src="Videos/ReelIntro.mp4" type="video/mp4" />
+            </video>
+          </Monoco>
+
+          <TheH1 text="Reel" />
         </div>
-        <div className='w-full h-[20%] items-center justify-center flex flex-col'></div>
+        <div className="flex items-end justify-end absolute bottom-[6%] right-[18%]">
+          <img className="w-32 dark:hidden" src="/images/see.png" alt="See light mode" />
+          <img className="w-32 hidden dark:block scale-x-110" src="/images/seeDrk.png" alt="See dark mode" />
+          <p className="text-theBlue dark:text-theOrange font-caveat text-4xl ml-2">See what I can do :D</p>
+        </div>
       </div>
-    );
+      <div className="w-full h-[20%] items-center justify-center flex flex-col"></div>
+    </div>
+  );
 }
+
 
 const ScrollingCircle = () => {
   const totalSpans = 110;

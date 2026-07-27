@@ -346,20 +346,19 @@ body {
 
 
  @keyframes charFadeIn {
-          0% {
+           0% {
             opacity: 0;
             filter: blur(50px);
-
-
+            scale: 0.6;
           }
           100% {
             opacity: 1;
             filter: blur(0);
+            scale: 1;
 
 
 
-          }
-        }
+          }}
         .fade-char {
 
           animation: charFadeIn 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
@@ -369,13 +368,12 @@ body {
           0% {
             opacity: 0;
             filter: blur(50px);
-  
-        
-
+            scale: 0.6;
           }
           100% {
             opacity: 1;
             filter: blur(0);
+            scale: 1;
 
 
 
@@ -383,5 +381,5 @@ body {
         }
         .fade-char2 {
 
-          animation: charFadeIn 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+          animation: charFadeIn2 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
         }

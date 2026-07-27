@@ -116,7 +116,7 @@ const TypingAnimation = ({ onComplete }) => {
     <motion.div key={defaultLanguage} className={`flex flex-col items-center w-full px-4 h-auto ${isArabic ? 'font-arb' : ''}`}
       dir={isArabic ? "rtl" : "ltr"} id="typing" 
     >
-      <motion.div  className={`flex z-10 flex-row items-end gap-2 sm:gap-3 md:gap-4 flex-wrap justify-center   h-10 sm:h-12 md:h-14   2xl:h-16  ${isArabic && "font-arb"}`}>
+      <motion.div  className={`flex z-10  flex-row items-end gap-2 sm:gap-3 md:gap-4 flex-wrap justify-center   h-10 sm:h-12 md:h-14   2xl:h-16  ${isArabic && "font-arb"}`}>
         <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-nowrap text-gray-800 dark:text-gray-100">
           {phase === 0 ? (
            <TypeIt
@@ -166,7 +166,8 @@ const TypingAnimation = ({ onComplete }) => {
         </h1>
 
 
-          {phase >= 1 && (
+      <motion.div className='w-0  overflow-visible ' animate={{width:phase >= 1?"auto":"0px"}} transition={{type:"spring",duration:0.1}} >
+            {phase >= 1 && (
             <Monoco
               borderRadius={13}
               smoothing={1}
@@ -208,6 +209,8 @@ const TypingAnimation = ({ onComplete }) => {
               </span>
             </Monoco>
           )}
+      </motion.div>
+
 
       </motion.div>
 
@@ -253,10 +256,10 @@ const TypingAnimation = ({ onComplete }) => {
               initial={{ x: "100vw", opacity: 0 }}
               animate={
                 phase >= 3
-                  ? { x: 0, opacity: 1 }
-                  : { x: "120vw", opacity: 0 }
+                  ? { x: 0, opacity: 1,scale:1}
+                  : { x: 0, opacity: 0,scale:0}
               }
-              transition={{ duration: 1.4,type:"spring",delay:1.5,mass:0.4}}
+              transition={{ duration: 1.4,type:"spring",delay:1,mass:1}}
               className="w-full h-[50%] sm:w-[50%] sm:h-full flex items-center"
             >
               <BackendGearsDisplay isArabic={isArabic} />

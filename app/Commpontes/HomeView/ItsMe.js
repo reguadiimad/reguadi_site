@@ -157,6 +157,8 @@ export default function FoundersSection({ cleanSpace, setIsDocked, setShowWaves 
   
   const mainWrapperRef = useRef(null);
   const containerRef = useRef(null);
+  const gridBgRef = useRef(null);
+  const metricColumnRef = useRef(null);
   const textContainerRef = useRef(null);
   const metricRef = useRef(null);
   const counterRef = useRef(null);
@@ -274,7 +276,7 @@ export default function FoundersSection({ cleanSpace, setIsDocked, setShowWaves 
   useEffect(() => {
     if (timerTweenRef.current) {
       if (isPlaying) {
-        timerTweenRef.current.play();
+        timerTweenRef.current.resume();
       } else {
         timerTweenRef.current.pause();
       }
@@ -283,6 +285,54 @@ export default function FoundersSection({ cleanSpace, setIsDocked, setShowWaves 
 
   useEffect(() => {
     const ctx = gsap.context(() => {
+      
+      // ==========================================
+      // 1. MULTI-LAYER PARALLAX SCROLLING ACTIONS
+      // ==========================================
+
+      // Background Grid Parallax (Drifts slower down)
+      if (gridBgRef.current) {
+        gsap.to(gridBgRef.current, {
+          yPercent: 30,
+          ease: "none",
+          scrollTrigger: {
+            trigger: containerRef.current,
+            start: "top bottom",
+            end: "bottom top",
+            scrub: true,
+          }
+        });
+      }
+
+      // Left Column / Metric Parallax (Moves slightly faster up for depth)
+      if (metricColumnRef.current) {
+        gsap.to(metricColumnRef.current, {
+          y: -40,
+          ease: "none",
+          scrollTrigger: {
+            trigger: containerRef.current,
+            start: "top bottom",
+            end: "bottom top",
+            scrub: 1,
+          }
+        });
+      }
+
+      // Text Quotes Container Parallax (Slight offset delay)
+      if (textContainerRef.current) {
+        gsap.to(textContainerRef.current, {
+          y: -15,
+          ease: "none",
+          scrollTrigger: {
+            trigger: containerRef.current,
+            start: "top bottom",
+            end: "bottom top",
+            scrub: 0.5,
+          }
+        });
+      }
+
+      // Dynamic Gradient Mask Reveal Parallax
       const maskProgress = { value: -40 }; 
       gsap.to(maskProgress, {
         value: 140,
@@ -304,11 +354,11 @@ export default function FoundersSection({ cleanSpace, setIsDocked, setShowWaves 
         }
       });
 
-      // Manage Waves visibility state based on 80% viewport coverage
+      // 2. Waves visibility toggle
       if (setShowWaves && mainWrapperRef.current) {
         ScrollTrigger.create({
           trigger: mainWrapperRef.current,
-          start: "top 20%", // Triggers when section covers ~80% of screen height
+          start: "top 20%",
           end: "bottom 20%",
           onEnter: () => setShowWaves(false),
           onLeaveBack: () => setShowWaves(true),
@@ -317,16 +367,16 @@ export default function FoundersSection({ cleanSpace, setIsDocked, setShowWaves 
         });
       }
 
+      // 3. CAPSULE SCROLL TRIGGERS (FIXED FLOATING -> DOCKED LANDING)
       if (textContainerRef.current && landingRef.current) {
-        // 1. Manage Capsule Visibility
+        
+        // Visibility Trigger (Activates Fixed Floating Capsule)
         ScrollTrigger.create({
           trigger: textContainerRef.current,
-          start: "top 90%",
+          start: "top 85%",
           end: "bottom top", 
           onEnter: () => setIsCapsuleVisible(true),
-          onLeave: () => {
-            setIsCapsuleVisible(true);
-          },
+          onLeave: () => setIsCapsuleVisible(true),
           onEnterBack: () => setIsCapsuleVisible(true),
           onLeaveBack: () => {
             setIsCapsuleVisible(false);
@@ -334,20 +384,17 @@ export default function FoundersSection({ cleanSpace, setIsDocked, setShowWaves 
           }
         });
 
-        // 2. Manage Capsule Docking State
+        // Docking Trigger (Transitions Fixed -> Absolute Landing Slot)
         ScrollTrigger.create({
           trigger: landingRef.current,
           start: "top bottom-=96", 
           end: "bottom top",
           onEnter: () => setIsCapsuleDocked(true),
-          onLeave: () => {
-            setIsCapsuleDocked(true);
-          },
+          onLeave: () => setIsCapsuleDocked(true),
           onEnterBack: () => setIsCapsuleDocked(true),
-          onLeaveBack: () => {
-            setIsCapsuleDocked(false);
-          }
+          onLeaveBack: () => setIsCapsuleDocked(false)
         });
+
       }
     }, mainWrapperRef);
 
@@ -483,17 +530,25 @@ export default function FoundersSection({ cleanSpace, setIsDocked, setShowWaves 
     <div 
       ref={mainWrapperRef} 
       dir={isArabic ? 'rtl' : 'ltr'}
-      className="relative w-full bg-gradient-to-b from-[#e8eaec00] to-lightwhite dark:from-[#10101000] dark:to-[#101010] to-30%"
+      className="relative w-full bg-gradient-to-b from-[#e8eaec00] to-lightwhite dark:from-[#10101000] dark:to-[#101010] to-30% pb-52"
     >
       <section 
         ref={containerRef}
         className="min-h-screen text-gray-900 dark:text-white flex items-center justify-center p-6 sm:p-12 md:p-20 font-sans -mt-64 tracking-tight relative overflow-hidden"
       >
-        <div className="absolute inset-0 bg-[radial-gradient(#ffffff07_1px,transparent_1px)] [background-size:24px_24px] pointer-events-none opacity-60" />
+        {/* Parallax Background Grid */}
+        <div 
+          ref={gridBgRef} 
+          className="absolute inset-0 bg-[radial-gradient(#ffffff07_1px,transparent_1px)] [background-size:24px_24px] pointer-events-none opacity-60 will-change-transform" 
+        />
 
         <div className="w-full grid grid-cols-1 pt-64 lg:grid-cols-12 gap-12 lg:gap-16 items-start relative z-10">
           
-          <div className="lg:col-span-4 flex flex-row justify-between lg:flex-col h-full pt-4 lg:min-h-[320px]">
+          {/* Parallax Metric Column */}
+          <div 
+            ref={metricColumnRef} 
+            className="lg:col-span-4 flex flex-row justify-between lg:flex-col h-full pt-4 lg:min-h-[320px] will-change-transform"
+          >
             <div className={`space-y-3 ${fontSatoshi}`}>
               <div className="text-[8px] lg:text-[10px] font-mono uppercase tracking-[0.3em] text-neutral-500">
                 {labels.capability} // 0{activeIndex + 1}
@@ -519,7 +574,8 @@ export default function FoundersSection({ cleanSpace, setIsDocked, setShowWaves 
             </div>
           </div>
 
-          <div ref={textContainerRef} className={`lg:col-span-8 flex flex-col space-y-12 lg:space-y-14 ${fontSatoshi} relative`}>
+          {/* Text Quote Container */}
+          <div ref={textContainerRef} className={`lg:col-span-8 flex flex-col space-y-12 lg:space-y-14 ${fontSatoshi} relative will-change-transform`}>
             
             <div className="base-layer space-y-12 lg:space-y-14 text-neutral-300 dark:text-neutral-700/80 select-none pointer-events-none transition-colors duration-300">
               <h1 className={`text-2xl sm:text-4xl md:text-[2.75rem] lg:text-4xl xl:text-5xl font-bold leading-[1.2] tracking-tight ${isArabic ? 'lg:pl-16' : 'lg:pr-16'}`}>
@@ -580,12 +636,13 @@ export default function FoundersSection({ cleanSpace, setIsDocked, setShowWaves 
         >
           <div 
             onClick={togglePlayPause}
-            className="w-full h-full flex flex-col justify-center px-4 lg:px-6 cursor-pointer group/line select-none relative hover:pb-2 transform transition-all duration-300 ease-out z-20"
+            className="w-full h-full flex flex-col justify-center px-4 lg:px-6 cursor-pointer group/line select-none relative transform transition-all duration-300 ease-out z-20"
             title={isPlaying ? labels.clickPause : labels.clickPlay}
           >
             <motion.div 
               variants={TRACK_REVEAL_CONFIG}
-              className="w-full h-[8px] lg:h-[12px] rounded-full bg-[#87878a] dark:bg-darGray relative overflow-hidden transition-all duration-300 ease-out group-hover/line:h-[6px] group-hover/line:bg-neutral-300 dark:group-hover/line:bg-neutral-700 will-change-[filter,opacity]"
+              transition={{ type: "spring" }}
+              className="w-full h-[8px] lg:h-[12px] rounded-full hover:scale-105 hover:shadow-2xs bg-[#87878a] dark:bg-darGray relative overflow-hidden transition-all duration-300 ease-out will-change-[filter,opacity]"
             >
               <div 
                 ref={progressBarRef} 
@@ -593,13 +650,10 @@ export default function FoundersSection({ cleanSpace, setIsDocked, setShowWaves 
                 style={{ transform: "scaleX(0)" }}
               />
             </motion.div>
-            
-            <span className={`absolute bottom-3 ${isArabic ? 'right-6' : 'left-6'} text-[8px] uppercase tracking-widest text-black/60 dark:text-white/60 opacity-0 transform translate-y-1 transition-all duration-300 ease-out group-hover/line:opacity-100 group-hover/line:translate-y-0`}>
-              {isPlaying ? labels.pauseTimeline : labels.playTimeline}
-            </span>
           </div>
         </TriggerCapsulle>
       </div>
+      
     </div>
   );
 }

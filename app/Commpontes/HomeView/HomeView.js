@@ -4,7 +4,7 @@ import AnimatedWelcome from './AnimatedWelcome';
 import TypingAnimation from './IntroductionView';
 import ArchedCarousel from './ArchedCarousel'; // Import the new component
 import WhatICanDo from './WhatICanDo';
-import TextRevealSection from './ItsMe';
+import ItsMe from './ItsMe';
 
 
 
@@ -42,8 +42,7 @@ export default function HomeView({showTyping, setShowTyping,typingComplete, setT
      { showTyping && typingComplete && (
         <div className='w-full relative  '>
           <ArchedCarousel />
-          <TextRevealSection setShowWaves={setShowWaves} setIsDocked={setIsDocked} cleanSpace={cleanSpace}  />
-   
+          <ItsMe setShowWaves={setShowWaves} setIsDocked={setIsDocked} cleanSpace={cleanSpace}  />
           <WhatICanDo />
         </div>
       )}
