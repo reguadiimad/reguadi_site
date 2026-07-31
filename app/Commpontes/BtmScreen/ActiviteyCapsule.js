@@ -167,6 +167,7 @@ const LanguageCapsule = ({ prevLanguage }) => {
     );
 };
 
+
 const ThemeCapsule = () => {
     const language = useSelector((state) => state.language);
     const theme = useSelector((state) => state.theme.theme);

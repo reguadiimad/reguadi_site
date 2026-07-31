@@ -6,7 +6,7 @@ export default function SmoothScrolling({ children }) {
     <ReactLenis 
       root 
       options={{ 
-        lerp: 0.01,        // درجة الإنسيابية (كلما صغار كلما زادت النعومة)
+        lerp: 0.009,        // درجة الإنسيابية (كلما صغار كلما زادت النعومة)
         duration: 1.3,     // وقت الحركة بـ الثواني
         smoothWheel: true, // تفعيل لـ Mouse Wheel
         wheelMultiplier: 1, 

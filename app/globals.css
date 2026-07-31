@@ -33,7 +33,14 @@
   font-display: swap;
 
 }
+@font-face {
+  font-family: 'Monologue';
+  src: url('../public/fonts/HWAnimoTRIALVF.woff2') format('woff2');
+  font-weight: 100 900; /* Automatically maps all weights from thin to bold */
+  font-style: normal;
+  font-display: swap;
 
+}
 
 
 :root {
@@ -73,6 +80,7 @@
   --color-mutedYellow: #E4E4A2;
 
   --font-satoshi: 'Satoshi', sans-serif;
+  --font-monologue: 'Monologue', sans-serif;
   --font-arb: 'Cairo', sans-serif;
   --font-fifa: 'Fifa26', sans-serif;
   --font-clashDisplay: 'ClashDisplay', sans-serif;
@@ -383,3 +391,34 @@ body {
 
           animation: charFadeIn2 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
         }
+
+/* ─── CloseTheGap Transition Section ─── */
+.close-the-gap-wrapper {
+  z-index: 1;
+  contain: layout;
+}
+
+.close-gap-title-line {
+  overflow: visible;
+  backface-visibility: hidden;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+.close-gap-title {
+  text-shadow: 
+    0 0 80px rgba(0, 0, 0, 0.03),
+    0 2px 4px rgba(0, 0, 0, 0.02);
+  letter-spacing: -0.04em;
+}
+
+:where(.dark) .close-gap-title {
+  text-shadow: 
+    0 0 80px rgba(255, 255, 255, 0.04),
+    0 2px 4px rgba(255, 255, 255, 0.02);
+}
+
+.iho{
+  border-bottom-left-radius: 0px !important;
+  border-bottom-right-radius: 0px !important;
+}

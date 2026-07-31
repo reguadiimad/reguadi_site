@@ -15,6 +15,7 @@ import Monoco from "@monokai/monoco-react";
 import "@fontsource/instrument-serif/400.css";
 import "@fontsource/instrument-serif/400-italic.css";
 
+
 const paragraphText =
   "A full-stack craftsman with a front-end soul and a mind that never stops creating. From pixel-perfect interfaces to the backend powering them — motion, responsiveness, AI, and your data, handled end-to-end.";
 
@@ -258,10 +259,11 @@ const About = () => {
   return (
     <div
       ref={containerRef}
-      className={`relative w-full ${
+      className={`relative w-full flex flex-col items-center justify-center ${
         isScrollReleased ? "h-screen" : "h-[250vh]"
       }`}
     >
+   
       <div
         className={`${
           isScrollReleased ? "relative" : "sticky top-0"

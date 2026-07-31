@@ -2,9 +2,8 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
-  theme: "system",      // "light" | "dark" | "system"
-
-  isChanged: false,  // to track if user has changed theme manually
+  theme: "system", // "light" | "dark" | "system"
+  isChanged: false, // tracks manual theme changes
 };
 
 const themeSlice = createSlice({
@@ -18,11 +17,10 @@ const themeSlice = createSlice({
       state.isChanged = action.payload;
     },
     resetThemeCapsule: (state) => {
-     state.isThemeChanged = false;
-    }
-    
+      state.isChanged = false; // Fixed key mismatch
+    },
   },
 });
 
-export const { setTheTheme,setThemeIsChanged,resetThemeCapsule } = themeSlice.actions;
+export const { setTheTheme, setThemeIsChanged, resetThemeCapsule } = themeSlice.actions;
 export default themeSlice.reducer;

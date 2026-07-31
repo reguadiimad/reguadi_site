@@ -161,6 +161,8 @@ useEffect(() => {
         setShowWaves={setShowWaves}
         />
 
+      
+
 
 
           {typingComplete && <About/>}
